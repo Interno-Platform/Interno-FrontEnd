@@ -1,10 +1,9 @@
-
 name: Deploy FrontEnd to Server
 
 on:
   push:
     branches:
-      - main
+      - main   
 
 jobs:
   build-and-deploy:
@@ -17,10 +16,10 @@ jobs:
       - name:  Install dependencies
         run: npm install
 
-      - name: Build project
+      - name:  Build project
         run: npm run build
 
-      - name: Upload via FTP
+      - name:  Upload via FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
         with:
           server: 31.97.37.129
