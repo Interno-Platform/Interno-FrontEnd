@@ -14,6 +14,7 @@ const schema = z.object({
   message: z.string().min(10),
 });
 
+
 const ContactPage = () => {
   const {
     register,
