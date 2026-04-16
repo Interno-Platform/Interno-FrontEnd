@@ -292,12 +292,12 @@ const PublicLayout = () => {
               >
                 About
               </Link>
-              <Link
+              {/* <Link
                 className="block transition-colors hover:text-zinc-700"
                 to="/contact"
               >
                 Contact
-              </Link>
+              </Link> */}
             </div>
           </div>
           <div>
