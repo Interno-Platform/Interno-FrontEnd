@@ -28,7 +28,7 @@ jobs:
       - name: Check build output
         run: ls -la dist
 
-      - name: Upload via FTP
+      - name: Deploy To Server
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
         with:
           server: 31.97.37.129
