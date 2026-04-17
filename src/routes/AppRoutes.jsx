@@ -1,10 +1,11 @@
-import { Navigate, Route, Routes } from "react-router-dom";
+import { Route, Routes } from "react-router-dom";
 import PublicLayout from "@/components/layout/PublicLayout";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import ProtectedRoute from "@/routes/ProtectedRoute";
 import LandingPage from "@/pages/public/LandingPage";
 import AboutPage from "@/pages/public/AboutPage";
 import ContactPage from "@/pages/public/ContactPage";
+import NotFoundPage from "@/pages/public/NotFoundPage";
 import LoginPage from "@/pages/auth/LoginPage";
 import RegisterPage from "@/pages/auth/RegisterPage";
 
@@ -144,7 +145,7 @@ const AppRoutes = () => (
       }
     />
 
-    <Route path="*" element={<Navigate to="/" replace />} />
+    <Route path="*" element={<NotFoundPage />} />
   </Routes>
 );
 

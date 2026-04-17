@@ -390,10 +390,10 @@ const HeaderLink = ({ to, label }) => (
     to={to}
   >
     {({ isActive }) => (
-      <span className="relative inline-flex items-center">
+      <span className="relative group  inline-flex items-center">
         {label}
         {isActive ? (
-          <span className="absolute -bottom-1.5 left-1/2 h-1 w-1 -translate-x-1/2 rounded-full bg-primary" />
+          <span className="absolute -bottom-1.5 left-1/2 h-1 w-1 -translate-x-1/2 rounded-full bg-primary group-hover:w-full duration-1000" />
         ) : null}
       </span>
     )}
