@@ -22,16 +22,25 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: .env
+        run: |
+          echo "VITE_API_BASE_URL=${{ secrets.VITE_API_BASE_URL }}" >> .env
+          echo "VITE_USE_MOCK_AI=${{ secrets.VITE_USE_MOCK_AI }}" >> .env
+          echo "VITE_GEMINI_API_KEY=${{ secrets.VITE_GEMINI_API_KEY }}" >> .env
+          echo "VITE_USE_GEMINI_AI=${{ secrets.VITE_USE_GEMINI_AI }}" >> .env
+          echo "VITE_GROQ_API_KEY=${{ secrets.VITE_GROQ_API_KEY }}" >> .env
+          echo "VITE_GROQ_MODEL=${{ secrets.VITE_GROQ_MODEL }}" >> .env
+
       - name: Build project
         run: npm run build
 
       - name: Check build output
         run: ls -la dist
 
-      - name: Deploy To Server
+      - name: Deploy To Server (FTP)
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
         with:
-          server: 31.97.37.129
+          server: ${{ secrets.FTP_HOST }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: ./dist/
