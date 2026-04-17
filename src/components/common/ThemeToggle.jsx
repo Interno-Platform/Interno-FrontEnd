@@ -17,7 +17,6 @@ const ThemeToggle = ({ className = "" }) => {
       ) : (
         <MoonStar className="h-4 w-4" />
       )}
-      <span className="hidden sm:inline">{isDark ? "Light" : "Dark"}</span>
     </button>
   );
 };
