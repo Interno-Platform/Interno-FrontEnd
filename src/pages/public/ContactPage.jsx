@@ -6,6 +6,7 @@ import Card from "@/components/common/Card";
 import Button from "@/components/common/Button";
 import Input from "@/components/common/Input";
 import { notify } from "@/utils/notify";
+import { submitContactUsMessage } from "@/services/websiteService";
 
 const schema = z.object({
   name: z.string().min(2),
@@ -18,13 +19,18 @@ const ContactPage = () => {
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isSubmitting },
     reset,
   } = useForm({ resolver: zodResolver(schema) });
 
-  const onSubmit = () => {
-    notify.success("Your message has been sent successfully.");
-    reset();
+  const onSubmit = async (values) => {
+    try {
+      await submitContactUsMessage(values);
+      notify.success("Your message has been sent successfully.");
+      reset();
+    } catch (error) {
+      notify.error(error?.message, "Failed to send message. Please try again.");
+    }
   };
 
   return (
@@ -75,7 +81,9 @@ const ContactPage = () => {
                 </span>
               ) : null}
             </label>
-            <Button type="submit">Send Message</Button>
+            <Button type="submit" disabled={isSubmitting}>
+              Send Message
+            </Button>
           </form>
         </Card>
 

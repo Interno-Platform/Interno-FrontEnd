@@ -174,6 +174,11 @@ const CompanyMenu = ({ onNavigate, user }) => (
 const superAdminLinks = [
   { to: "/superadmin", label: "Dashboard", icon: Grid3X3, end: true },
   { to: "/superadmin/requests", label: "Requests", icon: FileText, badge: 12 },
+  {
+    to: "/superadmin/contact-messages",
+    label: "Contact Messages",
+    icon: MessageSquare,
+  },
   { to: "/superadmin/companies", label: "Companies", icon: Folder },
   { to: "/superadmin/trainees", label: "Trainees", icon: Users },
   {

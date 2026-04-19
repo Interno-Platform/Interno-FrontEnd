@@ -5,8 +5,15 @@ import {
   getPendingCompanies,
   getPendingInternships,
 } from "@/services/adminService";
+import { getContactUsMessages } from "@/services/websiteService";
 
 const bars = [40, 58, 44, 72, 85];
+
+const toTimestamp = (value) => {
+  if (!value) return 0;
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? 0 : date.getTime();
+};
 
 const SuperAdminDashboardPage = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -14,6 +21,7 @@ const SuperAdminDashboardPage = () => {
   const [pendingCompanies, setPendingCompanies] = useState([]);
   const [pendingInternships, setPendingInternships] = useState([]);
   const [traineesCount, setTraineesCount] = useState(0);
+  const [contactMessages, setContactMessages] = useState([]);
 
   useEffect(() => {
     const loadDashboard = async () => {
@@ -27,18 +35,25 @@ const SuperAdminDashboardPage = () => {
             getPendingInternships(),
           ]);
 
+        const contactMessagesResponse = await getContactUsMessages().catch(
+          () => ({ data: [] }),
+        );
+
         const trainees = traineesResponse?.data || [];
         const companies = companiesResponse?.data || [];
         const internships = internshipsResponse?.data || [];
+        const messages = contactMessagesResponse?.data || [];
 
         setTraineesCount(trainees.length);
         setPendingCompanies(companies);
         setPendingInternships(internships);
+        setContactMessages(messages);
       } catch (error) {
         setLoadError(error?.message || "Unable to load dashboard data.");
         setTraineesCount(0);
         setPendingCompanies([]);
         setPendingInternships([]);
+        setContactMessages([]);
       } finally {
         setIsLoading(false);
       }
@@ -79,6 +94,16 @@ const SuperAdminDashboardPage = () => {
           : "N/A",
       })),
     [pendingCompanies],
+  );
+
+  const sortedContactMessages = useMemo(
+    () =>
+      [...contactMessages].sort(
+        (a, b) =>
+          toTimestamp(b?.created_at || b?.createdAt || b?.updated_at) -
+          toTimestamp(a?.created_at || a?.createdAt || a?.updated_at),
+      ),
+    [contactMessages],
   );
 
   return (
@@ -225,6 +250,62 @@ const SuperAdminDashboardPage = () => {
           </Card>
         </div>
       </div>
+
+      <Card className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h3 className="text-2xl font-semibold tracking-tight text-slate-900">
+            Contact Us Messages
+          </h3>
+          <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
+            {isLoading
+              ? "Loading..."
+              : `${sortedContactMessages.length} message(s)`}
+          </span>
+        </div>
+
+        <div className="space-y-2">
+          {(sortedContactMessages.length
+            ? sortedContactMessages.slice(0, 8)
+            : [
+                {
+                  id: "empty",
+                  name: "No messages yet",
+                  subject: "Inbox is empty",
+                  message: "New Contact Us messages will appear here.",
+                  created_at: null,
+                  email: "",
+                },
+              ]
+          ).map((item) => (
+            <article
+              key={item.id || `${item.email}-${item.created_at}`}
+              className="rounded-xl border border-border/70 bg-white p-3"
+            >
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <h4 className="text-sm font-semibold text-slate-900">
+                    {item.name || "Unknown sender"}
+                  </h4>
+                  <p className="text-xs text-muted-foreground">
+                    {item.email || "No email provided"}
+                  </p>
+                </div>
+                <span className="text-xs text-muted-foreground">
+                  {item.created_at
+                    ? new Date(item.created_at).toLocaleString()
+                    : "-"}
+                </span>
+              </div>
+              <p className="mt-2 text-sm font-medium text-slate-800">
+                {item.subject || "No subject"}
+              </p>
+              <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">
+                {item.message || "No message content."}
+              </p>
+            </article>
+          ))}
+        </div>
+      </Card>
     </div>
   );
 };

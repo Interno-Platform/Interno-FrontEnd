@@ -17,6 +17,8 @@ import SuperadminAssessmentsPage from "@/pages/superadmin/AssessmentsPage";
 import SuperadminReportsPage from "@/pages/superadmin/ReportsPage";
 import SuperadminSettingsPage from "@/pages/superadmin/SettingsPage";
 import SuperadminRequestsPage from "@/pages/superadmin/RequestsPage";
+import ContactMessagesPage from "@/pages/superadmin/ContactMessagesPage";
+import ContactMessageDetailsPage from "@/pages/superadmin/ContactMessageDetailsPage";
 
 import CompanyDashboardPage from "@/pages/company/DashboardPage";
 import CompanyInternshipsPage from "@/pages/company/InternshipsPage";
@@ -67,6 +69,11 @@ const AppRoutes = () => (
       <Route path="internships" element={<SuperadminInternshipsPage />} />
       <Route path="assessments" element={<SuperadminAssessmentsPage />} />
       <Route path="reports" element={<SuperadminReportsPage />} />
+      <Route path="contact-messages" element={<ContactMessagesPage />} />
+      <Route
+        path="contact-messages/:messageId"
+        element={<ContactMessageDetailsPage />}
+      />
       <Route path="settings" element={<SuperadminSettingsPage />} />
     </Route>
 
