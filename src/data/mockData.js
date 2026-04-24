@@ -6,6 +6,7 @@ export const users = [
     role: "admin",
     name: "System Admin",
   },
+  
   {
     id: "u2",
     email: "hr@brightlabs.com",
