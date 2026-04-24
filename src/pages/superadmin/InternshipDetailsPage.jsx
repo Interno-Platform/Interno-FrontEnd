@@ -18,7 +18,9 @@ const formatDate = (value) => {
 
 const toSkillLabel = (skill) => {
   if (typeof skill === "string") return skill;
-  return skill?.name || skill?.skill_name || `Skill #${skill?.id || skill?.skill_id}`;
+  return (
+    skill?.name || skill?.skill_name || `Skill #${skill?.id || skill?.skill_id}`
+  );
 };
 
 const toDisplayStatus = (status) => {
@@ -35,7 +37,9 @@ const InternshipDetailsPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const [internship, setInternship] = useState(location.state?.internship || null);
+  const [internship, setInternship] = useState(
+    location.state?.internship || null,
+  );
   const [isLoading, setIsLoading] = useState(!location.state?.internship);
   const [loadError, setLoadError] = useState("");
   const [actionKey, setActionKey] = useState("");
@@ -54,7 +58,8 @@ const InternshipDetailsPage = () => {
       try {
         const findById = (items) =>
           (Array.isArray(items) ? items : []).find(
-            (item) => String(item?.id ?? item?.internship_id) === String(internshipId),
+            (item) =>
+              String(item?.id ?? item?.internship_id) === String(internshipId),
           );
 
         const requestedListType = location.state?.listType;
@@ -110,7 +115,9 @@ const InternshipDetailsPage = () => {
     try {
       await changeInternshipStatus(targetCompanyId, status);
       notify.success(
-        status === "active" ? "Internship approved successfully." : "Internship rejected.",
+        status === "active"
+          ? "Internship approved successfully."
+          : "Internship rejected.",
       );
       navigate("/superadmin/internships", {
         state: {
@@ -125,7 +132,8 @@ const InternshipDetailsPage = () => {
   };
 
   const internshipStatus = toDisplayStatus(internship?.status);
-  const canReview = String(internship?.status || "").toLowerCase() === "pending";
+  const canReview =
+    String(internship?.status || "").toLowerCase() === "pending";
 
   if (isLoading) {
     return (
@@ -138,7 +146,9 @@ const InternshipDetailsPage = () => {
   if (!internship || loadError) {
     return (
       <Card className="space-y-3 border-rose-200 bg-rose-50/70">
-        <p className="text-sm text-rose-700">{loadError || "Internship not found."}</p>
+        <p className="text-sm text-rose-700">
+          {loadError || "Internship not found."}
+        </p>
         <Link
           className="inline-flex rounded-lg border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
           to="/superadmin/internships"
@@ -153,7 +163,9 @@ const InternshipDetailsPage = () => {
     <div className="space-y-5">
       <Card className="overflow-hidden border-0 bg-gradient-to-br from-[#0f766e] via-[#0f766e] to-[#115e59] text-white shadow-lg">
         <p className="text-xs font-semibold uppercase tracking-[0.16em] text-teal-100">
-          {resolvedListType === "pending" ? "Pending Review" : "Approved Internship"}
+          {resolvedListType === "pending"
+            ? "Pending Review"
+            : "Approved Internship"}
         </p>
         <div className="mt-2 flex flex-wrap items-center justify-between gap-3">
           <div>
@@ -161,7 +173,9 @@ const InternshipDetailsPage = () => {
               {internship.title || "Untitled Internship"}
             </h1>
             <p className="mt-1 text-sm text-teal-100">
-              {internship.company_name || internship.name || `Company #${companyId}`}
+              {internship.company_name ||
+                internship.name ||
+                `Company #${companyId}`}
             </p>
           </div>
           <Badge className="bg-white/20 text-white">{internshipStatus}</Badge>
@@ -170,24 +184,36 @@ const InternshipDetailsPage = () => {
 
       <Card className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <div className="rounded-xl border border-slate-100 bg-slate-50 p-3">
-          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Seats</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
+            Seats
+          </p>
           <p className="mt-1 text-lg font-bold text-slate-900">
             {internship.seats ?? internship.slots ?? "N/A"}
           </p>
         </div>
         <div className="rounded-xl border border-slate-100 bg-slate-50 p-3">
-          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Work Type</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
+            Work Type
+          </p>
           <p className="mt-1 text-lg font-bold text-slate-900">
             {internship.location_type || internship.locationType || "N/A"}
           </p>
         </div>
         <div className="rounded-xl border border-slate-100 bg-slate-50 p-3">
-          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Created</p>
-          <p className="mt-1 text-lg font-bold text-slate-900">{formatDate(internship.created_at)}</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
+            Created
+          </p>
+          <p className="mt-1 text-lg font-bold text-slate-900">
+            {formatDate(internship.created_at)}
+          </p>
         </div>
         <div className="rounded-xl border border-slate-100 bg-slate-50 p-3">
-          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Deadline</p>
-          <p className="mt-1 text-lg font-bold text-slate-900">{formatDate(internship.deadline)}</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
+            Deadline
+          </p>
+          <p className="mt-1 text-lg font-bold text-slate-900">
+            {formatDate(internship.deadline)}
+          </p>
         </div>
       </Card>
 
@@ -234,7 +260,10 @@ const InternshipDetailsPage = () => {
             <button
               className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700 disabled:opacity-60"
               type="button"
-              disabled={actionKey === `${internship?.company_id || companyId}-${internshipId}-active`}
+              disabled={
+                actionKey ===
+                `${internship?.company_id || companyId}-${internshipId}-active`
+              }
               onClick={() => updateStatus("active")}
             >
               Approve
@@ -242,7 +271,10 @@ const InternshipDetailsPage = () => {
             <button
               className="rounded-lg bg-rose-600 px-4 py-2 text-sm font-semibold text-white hover:bg-rose-700 disabled:opacity-60"
               type="button"
-              disabled={actionKey === `${internship?.company_id || companyId}-${internshipId}-rejected`}
+              disabled={
+                actionKey ===
+                `${internship?.company_id || companyId}-${internshipId}-rejected`
+              }
               onClick={() => updateStatus("rejected")}
             >
               Reject

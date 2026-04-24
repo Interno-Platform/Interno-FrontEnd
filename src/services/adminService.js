@@ -27,7 +27,9 @@ const withCompanyMeta = (internship, company) => ({
 });
 
 const isApprovedInternship = (internship) =>
-  approvedInternshipStatuses.has(String(internship?.status || "").toLowerCase());
+  approvedInternshipStatuses.has(
+    String(internship?.status || "").toLowerCase(),
+  );
 
 // Approve Company - POST /api/admin/approve-company/:company_id
 export const approveCompany = async (companyId) => {
@@ -99,7 +101,9 @@ export const getPendingInternships = async (companyId = null) => {
     return normalizeListResponse(result.value.data).data;
   });
 
-  const uniqueCompanyIds = [...new Set(companies.map((company) => company?.id).filter(Boolean))];
+  const uniqueCompanyIds = [
+    ...new Set(companies.map((company) => company?.id).filter(Boolean)),
+  ];
 
   if (!uniqueCompanyIds.length) {
     return {
@@ -159,7 +163,9 @@ export const getApprovedInternships = async (companyId = null) => {
     ? companiesResponse.data
     : [];
 
-  const companyIds = [...new Set(companies.map((company) => company?.id).filter(Boolean))];
+  const companyIds = [
+    ...new Set(companies.map((company) => company?.id).filter(Boolean)),
+  ];
 
   if (!companyIds.length) {
     return {
@@ -176,8 +182,9 @@ export const getApprovedInternships = async (companyId = null) => {
       });
       const normalized = normalizeListResponse(response.data);
       const company =
-        companies.find((companyItem) => String(companyItem?.id) === String(id)) ||
-        null;
+        companies.find(
+          (companyItem) => String(companyItem?.id) === String(id),
+        ) || null;
       return mapApproved(normalized.data, company);
     }),
   );

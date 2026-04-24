@@ -48,7 +48,8 @@ const InternshipsPage = () => {
       ]);
 
       const pendingList =
-        pendingResult.status === "fulfilled" && Array.isArray(pendingResult.value?.data)
+        pendingResult.status === "fulfilled" &&
+        Array.isArray(pendingResult.value?.data)
           ? pendingResult.value.data
           : [];
 
@@ -61,7 +62,10 @@ const InternshipsPage = () => {
       setPendingInternships(pendingList);
       setApprovedInternships(approvedList);
 
-      if (pendingResult.status === "rejected" && approvedResult.status === "rejected") {
+      if (
+        pendingResult.status === "rejected" &&
+        approvedResult.status === "rejected"
+      ) {
         throw new Error("Unable to load internships.");
       }
     } catch (error) {
@@ -73,7 +77,8 @@ const InternshipsPage = () => {
     }
   };
 
-  const currentList = activeTab === "pending" ? pendingInternships : approvedInternships;
+  const currentList =
+    activeTab === "pending" ? pendingInternships : approvedInternships;
 
   const counts = useMemo(
     () => ({
@@ -93,9 +98,12 @@ const InternshipsPage = () => {
       <Card className="overflow-hidden border-0 bg-gradient-to-br from-[#0f766e] via-[#0f766e] to-[#115e59] text-white shadow-lg">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div className="space-y-2">
-            <h2 className="text-3xl font-extrabold tracking-tight">Internship Reviews</h2>
+            <h2 className="text-3xl font-extrabold tracking-tight">
+              Internship Reviews
+            </h2>
             <p className="text-sm text-teal-100">
-              Track what still needs approval and what has already been approved.
+              Track what still needs approval and what has already been
+              approved.
             </p>
           </div>
           <div className="grid grid-cols-3 gap-2">
@@ -124,7 +132,9 @@ const InternshipsPage = () => {
       <Card className="space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h3 className="text-xl font-bold text-slate-900">Manage Internships</h3>
+            <h3 className="text-xl font-bold text-slate-900">
+              Manage Internships
+            </h3>
             <p className="text-sm text-slate-600">
               Switch between pending and approved opportunities.
             </p>
