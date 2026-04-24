@@ -31,6 +31,30 @@ const toProgressNumber = (value) => {
   return 0;
 };
 
+const hasAnyText = (value) => String(value ?? "").trim().length > 0;
+
+const hasCompleteProfileInfo = (profile) =>
+  hasAnyText(profile?.fullName) &&
+  hasAnyText(profile?.email) &&
+  hasAnyText(profile?.phone) &&
+  hasAnyText(profile?.university);
+
+const hasCvFromPayload = (payload) =>
+  toBoolean(payload?.data?.has_cv) ||
+  toBoolean(payload?.data?.cv_uploaded) ||
+  toBoolean(payload?.data?.hasCv) ||
+  toBoolean(payload?.data?.cvUploaded) ||
+  toBoolean(payload?.has_cv) ||
+  toBoolean(payload?.cv_uploaded) ||
+  toBoolean(payload?.hasCv) ||
+  toBoolean(payload?.cvUploaded) ||
+  hasAnyText(payload?.data?.cv_file) ||
+  hasAnyText(payload?.data?.cv_url) ||
+  hasAnyText(payload?.data?.resume_url) ||
+  hasAnyText(payload?.cv_file) ||
+  hasAnyText(payload?.cv_url) ||
+  hasAnyText(payload?.resume_url);
+
 const InternshipDetailsPage = () => {
   const { internshipId } = useParams();
   const location = useLocation();
@@ -153,41 +177,64 @@ const InternshipDetailsPage = () => {
               .filter(Boolean)
           : [];
 
-        const hasSkills = normalizedSkills.length > 0 || [];
+        const hasSkills =
+          normalizedSkills.length > 0 || localSavedSkills.length > 0;
         const hasCv =
-          toBoolean(response?.data?.has_cv) ||
-          toBoolean(response?.data?.cv_uploaded) ||
-          toBoolean(response?.data?.hasCv) ||
-          toBoolean(response?.data?.cvUploaded) ||
-          toBoolean(response?.has_cv) ||
-          toBoolean(response?.cv_uploaded) ||
-          toBoolean(response?.hasCv) ||
-          toBoolean(response?.cvUploaded) ||
+          hasCvFromPayload(response) ||
           Boolean(cvFile) ||
           Boolean(hasCvUploaded);
 
+        const profileFromApi = {
+          fullName:
+            response?.data?.name ??
+            response?.name ??
+            response?.data?.full_name ??
+            response?.full_name ??
+            user?.name,
+          email: response?.data?.email ?? response?.email ?? user?.email,
+          phone:
+            response?.data?.phone ??
+            response?.phone ??
+            user?.phone ??
+            user?.details?.phone,
+          university:
+            response?.data?.university ??
+            response?.university ??
+            user?.university ??
+            user?.details?.university,
+        };
+        const hasProfileInfo = hasCompleteProfileInfo(profileFromApi);
+        const hasReadiness = hasCv || hasProfileInfo;
+
         const normalizedProgress = toProgressNumber(progressValue);
         const computedProgress =
-          hasCv && hasSkills ? 100 : hasCv || hasSkills ? 50 : 0;
+          hasReadiness && hasSkills ? 100 : hasReadiness || hasSkills ? 50 : 0;
 
         setProfileProgress(Math.max(normalizedProgress, computedProgress));
         setSavedSkills(
           normalizedSkills.length ? normalizedSkills : localSavedSkills,
         );
-        setProfileReady(hasCv && hasSkills);
+        setProfileReady(hasReadiness && hasSkills);
       } catch (error) {
         const hasLocalSkills = localSavedSkills.length > 0;
         const hasLocalCv = Boolean(cvFile) || Boolean(hasCvUploaded);
+        const hasLocalProfile = hasCompleteProfileInfo({
+          fullName: user?.name,
+          email: user?.email,
+          phone: user?.phone ?? user?.details?.phone,
+          university: user?.university ?? user?.details?.university,
+        });
+        const hasReadiness = hasLocalCv || hasLocalProfile;
 
         setProfileProgress(
-          hasLocalCv && hasLocalSkills
+          hasReadiness && hasLocalSkills
             ? 100
-            : hasLocalCv || hasLocalSkills
+            : hasReadiness || hasLocalSkills
               ? 50
               : 0,
         );
         setSavedSkills(localSavedSkills);
-        setProfileReady(hasLocalCv && hasLocalSkills);
+        setProfileReady(hasReadiness && hasLocalSkills);
 
         notify.error(error?.message, "Failed to load profile progress.");
       } finally {
@@ -196,7 +243,7 @@ const InternshipDetailsPage = () => {
     };
 
     loadProgress();
-  }, [traineeId, cvFile, hasCvUploaded, localSavedSkills]);
+  }, [traineeId, cvFile, hasCvUploaded, localSavedSkills, user]);
 
   const handleApply = async () => {
     if (!internship) {
@@ -210,7 +257,7 @@ const InternshipDetailsPage = () => {
 
     if (!profileReady) {
       notify.info(
-        `Profile completion is ${profileProgress}%. Please upload CV and save your skills first.`,
+        `Profile completion is ${profileProgress}%. Please upload your CV or complete your profile data, then ensure your skills are saved.`,
       );
       navigate("/trainee/profile", {
         state: { from: location.pathname },
@@ -362,7 +409,7 @@ const InternshipDetailsPage = () => {
             <p className="mt-2 text-xs text-slate-500">
               {profileReady
                 ? "You are ready to apply."
-                : "Upload CV and save extracted skills in your profile to unlock Apply."}
+                : "Upload a CV or complete profile data, then save your skills to unlock Apply."}
             </p>
           </div>
           <p className="inline-flex items-center gap-2 mr-5 text-sm text-slate-600">

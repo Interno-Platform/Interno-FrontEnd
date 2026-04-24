@@ -46,15 +46,15 @@ export const getQuestionsBySkills = async (requiredSkills, internshipId) => {
   return response.data;
 };
 
-// Get Trainee Applications - GET /api/applications/trainee/:traineeId
+// Get Trainee Applications - GET /api/internships/trainee/:traineeId
 export const getTraineeApplications = async (traineeId) => {
-  const response = await api.get(`/api/applications/trainee/${traineeId}`);
+  const response = await api.get(`/api/internships/trainee/${traineeId}`);
   return normalizeArrayResponse(response.data);
 };
 
-// Get Internship Applications - GET /api/applications/company/:internshipId
+// Get Internship Applications - GET /api/internships/company/:internshipId
 export const getInternshipApplications = async (internshipId) => {
-  const response = await api.get(`/api/applications/company/${internshipId}`);
+  const response = await api.get(`/api/internships/company/${internshipId}`);
   return normalizeArrayResponse(response.data);
 };
 

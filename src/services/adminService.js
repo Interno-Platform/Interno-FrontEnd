@@ -16,6 +16,19 @@ const normalizeListResponse = (responseData) => {
   };
 };
 
+const approvedInternshipStatuses = new Set(["active", "approved"]);
+
+const withCompanyMeta = (internship, company) => ({
+  ...internship,
+  company_id:
+    internship?.company_id ?? company?.id ?? internship?.companyId ?? null,
+  company_name:
+    internship?.company_name ?? company?.name ?? company?.company_name ?? null,
+});
+
+const isApprovedInternship = (internship) =>
+  approvedInternshipStatuses.has(String(internship?.status || "").toLowerCase());
+
 // Approve Company - POST /api/admin/approve-company/:company_id
 export const approveCompany = async (companyId) => {
   const response = await api.post(
@@ -116,5 +129,66 @@ export const getPendingInternships = async (companyId = null) => {
     data: internships,
     count: internships.length,
     message: "Pending internships retrieved.",
+  };
+};
+
+// Get Approved Internships - Uses company internships and filters approved statuses
+export const getApprovedInternships = async (companyId = null) => {
+  const mapApproved = (items, company = null) =>
+    (Array.isArray(items) ? items : [])
+      .map((item) => withCompanyMeta(item, company))
+      .filter(isApprovedInternship);
+
+  if (companyId) {
+    const response = await api.get("/api/company/internships", {
+      params: { company_id: companyId },
+    });
+    const normalized = normalizeListResponse(response.data);
+    const approved = mapApproved(normalized.data);
+
+    return {
+      ...normalized,
+      data: approved,
+      count: approved.length,
+      message: "Approved internships retrieved.",
+    };
+  }
+
+  const companiesResponse = await getApprovedCompanies();
+  const companies = Array.isArray(companiesResponse?.data)
+    ? companiesResponse.data
+    : [];
+
+  const companyIds = [...new Set(companies.map((company) => company?.id).filter(Boolean))];
+
+  if (!companyIds.length) {
+    return {
+      data: [],
+      count: 0,
+      message: "No approved companies found for internship lookup.",
+    };
+  }
+
+  const internshipsByCompany = await Promise.allSettled(
+    companyIds.map(async (id) => {
+      const response = await api.get("/api/company/internships", {
+        params: { company_id: id },
+      });
+      const normalized = normalizeListResponse(response.data);
+      const company =
+        companies.find((companyItem) => String(companyItem?.id) === String(id)) ||
+        null;
+      return mapApproved(normalized.data, company);
+    }),
+  );
+
+  const approvedInternships = internshipsByCompany.flatMap((result) =>
+    result.status === "fulfilled" ? result.value : [],
+  );
+
+  return {
+    data: approvedInternships,
+    count: approvedInternships.length,
+    message: "Approved internships retrieved.",
   };
 };

@@ -13,6 +13,7 @@ import SuperAdminDashboardPage from "@/pages/superadmin/DashboardPage";
 import CompaniesPage from "@/pages/superadmin/CompaniesPage";
 import SuperadminTraineesPage from "@/pages/superadmin/TraineesPage";
 import SuperadminInternshipsPage from "@/pages/superadmin/InternshipsPage";
+import SuperadminInternshipDetailsPage from "@/pages/superadmin/InternshipDetailsPage";
 import SuperadminAssessmentsPage from "@/pages/superadmin/AssessmentsPage";
 import SuperadminReportsPage from "@/pages/superadmin/ReportsPage";
 import SuperadminSettingsPage from "@/pages/superadmin/SettingsPage";
@@ -67,6 +68,10 @@ const AppRoutes = () => (
       <Route path="companies" element={<CompaniesPage />} />
       <Route path="trainees" element={<SuperadminTraineesPage />} />
       <Route path="internships" element={<SuperadminInternshipsPage />} />
+      <Route
+        path="internships/:companyId/:internshipId"
+        element={<SuperadminInternshipDetailsPage />}
+      />
       <Route path="assessments" element={<SuperadminAssessmentsPage />} />
       <Route path="reports" element={<SuperadminReportsPage />} />
       <Route path="contact-messages" element={<ContactMessagesPage />} />

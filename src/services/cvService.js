@@ -49,7 +49,6 @@ const parseSkills = (value) => {
       return parsed.skills.map((item) => String(item).trim()).filter(Boolean);
     }
   } catch {
-    // fallback parsing below
   }
 
   return cleanValue

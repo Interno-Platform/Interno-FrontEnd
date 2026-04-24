@@ -149,7 +149,10 @@ const TraineeProfilePage = () => {
 
   const hasUploadedCv = Boolean(cvFile) || Boolean(hasCvUploaded);
   const hasReadinessData = hasUploadedCv || hasProfileInfo;
-  const hasAnySkills = extractedSkills.length > 0 || savedSkills.length > 0;
+  const hasAnySkills = useMemo(
+    () => extractedSkills.length > 0 || savedSkills.length > 0,
+    [extractedSkills, savedSkills],
+  );
   const canApply = hasReadinessData && hasAnySkills;
   const profileCompletion = useMemo(
     () => Math.max(profileProgress, canApply ? 100 : 0),
@@ -220,9 +223,12 @@ const TraineeProfilePage = () => {
   }, [setSavedSkills, traineeId]);
 
   useEffect(() => {
+    if (!traineeId) return;
     loadTraineeProgress();
     loadTraineeSkills();
-  }, [loadTraineeProgress, loadTraineeSkills]);
+    // This effect should run on identity change only, not on local form/skills edits.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [traineeId]);
 
   const handleFile = (file) => {
     if (!file) return;

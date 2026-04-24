@@ -1,4 +1,4 @@
-import { StrictMode } from "react";
+import { Fragment, StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import App from "./App";
 import "./index.css";
@@ -6,8 +6,10 @@ import { initializeTheme } from "./hooks/useThemeMode";
 
 initializeTheme();
 
+const RootWrapper = import.meta.env.DEV ? Fragment : StrictMode;
+
 createRoot(document.getElementById("root")).render(
-  <StrictMode>
+  <RootWrapper>
     <App />
-  </StrictMode>,
+  </RootWrapper>,
 );

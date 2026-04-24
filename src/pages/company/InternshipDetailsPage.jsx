@@ -106,7 +106,7 @@ const CompanyInternshipDetailsPage = () => {
       setEditForm(buildEditForm(internship));
       setIsEditOpen(true);
     }
-  }, [internship, location.state]);
+  }, [internship, location.state?.openEdit]);
 
   const openEditModal = () => {
     if (!internship) return;
