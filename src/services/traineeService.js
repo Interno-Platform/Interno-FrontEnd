@@ -74,6 +74,12 @@ export const markQuizCompleted = async (
   return response.data;
 };
 
+// Get Internship Tech Exam - GET /api/internships/:internshipId/tech-exam
+export const getInternshipTechExam = async (internshipId) => {
+  const response = await api.get(`/api/internships/${internshipId}/tech-exam`);
+  return response.data;
+};
+
 // Get Quiz Status - GET /api/trainees/quiz-status/:traineeId/:examId
 export const getQuizStatus = async (traineeId, examId) => {
   const response = await api.get(

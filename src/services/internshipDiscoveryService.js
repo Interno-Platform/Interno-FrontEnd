@@ -2,6 +2,23 @@ import { getApprovedCompanies } from "@/services/adminService";
 import { getInternships } from "@/services/companyService";
 import { getAllSkills } from "@/services/skillsService";
 
+const toBoolean = (value) => {
+  if (typeof value === "boolean") {
+    return value;
+  }
+
+  if (typeof value === "number") {
+    return value === 1;
+  }
+
+  if (typeof value === "string") {
+    const normalized = value.trim().toLowerCase();
+    return normalized === "true" || normalized === "1" || normalized === "yes";
+  }
+
+  return false;
+};
+
 const parseSkillIds = (value) => {
   if (Array.isArray(value)) {
     return value.map((skillId) => Number(skillId)).filter(Boolean);
@@ -28,14 +45,99 @@ const toSkillMap = (skillsList) =>
   }, {});
 
 const resolveSkillNames = (skillIds, skillMap) =>
-  skillIds
-    .map((skillId) => skillMap[Number(skillId)])
-    .filter(Boolean);
+  skillIds.map((skillId) => skillMap[Number(skillId)]).filter(Boolean);
+
+const getExamId = (item, fallbackId) => {
+  const examId = Number(item?.exam_id ?? item?.examId ?? fallbackId);
+  return Number.isFinite(examId) && examId > 0 ? examId : Number(fallbackId);
+};
+
+export const resolveInternshipProgress = (item = {}) => {
+  const hasApplied = toBoolean(
+    item?.has_apply ??
+      item?.hasApply ??
+      item?.application_submitted ??
+      item?.applied,
+  );
+  const quizCompleted = toBoolean(item?.quiz_completed ?? item?.quizCompleted);
+  const techCompleted = toBoolean(item?.tech_completed ?? item?.techCompleted);
+
+  if (!hasApplied) {
+    return {
+      key: "application",
+      label: "Not applied",
+      actionLabel: "Start application",
+      routeType: "details",
+    };
+  }
+
+  if (!quizCompleted) {
+    return {
+      key: "quiz",
+      label: "Quiz pending",
+      actionLabel: "Continue quiz",
+      routeType: "quiz",
+    };
+  }
+
+  if (!techCompleted) {
+    return {
+      key: "tech",
+      label: "Tech exam pending",
+      actionLabel: "Continue coding exam",
+      routeType: "tech",
+    };
+  }
+
+  return {
+    key: "completed",
+    label: "Completed",
+    actionLabel: "View applications",
+    routeType: "applications",
+  };
+};
+
+export const getInternshipJourneyTarget = (internship, traineeId) => {
+  const progress = resolveInternshipProgress(internship);
+  const internshipId = Number(internship?.id ?? internship?.internship_id);
+  const examId = getExamId(internship, internshipId);
+
+  if (progress.routeType === "quiz") {
+    return {
+      to: `/trainee/assessments/${examId}/instructions`,
+      state: { internship, traineeId, examId },
+      progress,
+    };
+  }
+
+  if (progress.routeType === "tech") {
+    return {
+      to: `/trainee/exam/${examId}/code`,
+      state: { internship, traineeId, examId },
+      progress,
+    };
+  }
+
+  if (progress.routeType === "applications") {
+    return {
+      to: "/trainee/applications",
+      state: { internship },
+      progress,
+    };
+  }
+
+  return {
+    to: `/trainee/internships/${internshipId}`,
+    state: { internship },
+    progress,
+  };
+};
 
 const normalizeInternship = (item, companyName, skillMap) => {
   const skillIds = parseSkillIds(item?.required_skills ?? item?.skills);
   const skillNames = resolveSkillNames(skillIds, skillMap);
   const id = Number(item?.id ?? item?.internship_id);
+  const progress = resolveInternshipProgress(item);
 
   return {
     id,
@@ -57,6 +159,10 @@ const normalizeInternship = (item, companyName, skillMap) => {
     skills: skillNames,
     hasExam: Boolean(item?.has_exam),
     examId: Number(item?.exam_id) || id,
+    hasApply: toBoolean(item?.has_apply ?? item?.hasApply),
+    quizCompleted: toBoolean(item?.quiz_completed ?? item?.quizCompleted),
+    techCompleted: toBoolean(item?.tech_completed ?? item?.techCompleted),
+    progress,
   };
 };
 
@@ -87,7 +193,11 @@ export const getBrowseInternships = async () => {
       const response = await getInternships(companyId);
       const list = Array.isArray(response?.data) ? response.data : [];
       return list.map((item) =>
-        normalizeInternship(item, company?.company_name || company?.name, skillMap),
+        normalizeInternship(
+          item,
+          company?.company_name || company?.name,
+          skillMap,
+        ),
       );
     }),
   );
@@ -101,6 +211,7 @@ export const getBrowseInternships = async () => {
 
 export const getInternshipById = async (internshipId) => {
   const internships = await getBrowseInternships();
-  return internships.find((item) => Number(item.id) === Number(internshipId)) || null;
+  return (
+    internships.find((item) => Number(item.id) === Number(internshipId)) || null
+  );
 };
-

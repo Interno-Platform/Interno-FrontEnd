@@ -3,7 +3,10 @@ import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import { CalendarDays, Clock3, Layers3, MapPin, Users } from "lucide-react";
 import Card from "@/components/common/Card";
 import { applyForInternship } from "@/services/applicationService";
-import { getInternshipById } from "@/services/internshipDiscoveryService";
+import {
+  getInternshipById,
+  getInternshipJourneyTarget,
+} from "@/services/internshipDiscoveryService";
 import {
   getTraineeProgress,
   getTraineeSkills,
@@ -77,6 +80,11 @@ const InternshipDetailsPage = () => {
   const [isProgressLoading, setIsProgressLoading] = useState(false);
   const [profileReady, setProfileReady] = useState(false);
   const [savedSkills, setSavedSkills] = useState([]);
+
+  const journeyTarget = useMemo(
+    () => getInternshipJourneyTarget(internship, traineeId),
+    [internship, traineeId],
+  );
 
   useEffect(() => {
     if (location.state?.internship) {
@@ -294,6 +302,17 @@ const InternshipDetailsPage = () => {
     }
   };
 
+  const handlePrimaryAction = async () => {
+    if (journeyTarget.progress.routeType === "details") {
+      await handleApply();
+      return;
+    }
+
+    navigate(journeyTarget.to, {
+      state: journeyTarget.state,
+    });
+  };
+
   if (isLoading) {
     return (
       <Card>
@@ -325,9 +344,14 @@ const InternshipDetailsPage = () => {
             </h1>
             <p className="text-sm text-slate-600">{internship.company}</p>
           </div>
-          <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
-            {internship.status}
-          </span>
+          <div className="flex flex-wrap gap-2">
+            <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
+              {internship.status}
+            </span>
+            <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
+              {journeyTarget.progress?.label || "Not applied"}
+            </span>
+          </div>
         </div>
         <div className="flex flex-wrap gap-3 text-sm text-slate-600">
           <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-50 px-3 py-1">
@@ -422,30 +446,36 @@ const InternshipDetailsPage = () => {
           <button
             className="inline-flex w-full justify-center rounded-lg bg-[#164616] px-4 py-2 text-sm font-semibold text-white hover:bg-[#123a12] disabled:cursor-not-allowed disabled:opacity-70"
             disabled={
-              isApplying ||
-              isProgressLoading ||
-              !profileReady ||
-              !hasRequiredSkillMatch
+              (journeyTarget.progress.routeType === "details" &&
+                (isApplying ||
+                  isProgressLoading ||
+                  !profileReady ||
+                  !hasRequiredSkillMatch)) ||
+              false
             }
-            onClick={handleApply}
+            onClick={handlePrimaryAction}
             type="button"
             title={
-              profileReady && hasRequiredSkillMatch
-                ? "Apply for this internship"
-                : !profileReady
-                  ? "Complete profile: upload CV and save skills first"
-                  : "You need at least one required matching skill"
+              journeyTarget.progress.routeType === "details"
+                ? profileReady && hasRequiredSkillMatch
+                  ? "Apply for this internship"
+                  : !profileReady
+                    ? "Complete profile: upload CV and save skills first"
+                    : "You need at least one required matching skill"
+                : journeyTarget.progress.actionLabel
             }
           >
-            {isApplying
-              ? "Submitting..."
-              : profileReady && hasRequiredSkillMatch
-                ? "Apply for this internship"
-                : !profileReady
-                  ? "Complete profile before apply"
-                  : "No matching skill for this internship"}
+            {journeyTarget.progress.routeType === "details"
+              ? isApplying
+                ? "Submitting..."
+                : profileReady && hasRequiredSkillMatch
+                  ? "Apply for this internship"
+                  : !profileReady
+                    ? "Complete profile before apply"
+                    : "No matching skill for this internship"
+              : journeyTarget.progress.actionLabel}
           </button>
-          {!profileReady ? (
+          {journeyTarget.progress.routeType === "details" && !profileReady ? (
             <Link
               className="inline-flex w-full justify-center rounded-lg border border-amber-300 bg-amber-50 px-4 py-2 text-sm font-semibold text-amber-800 hover:bg-amber-100"
               to="/trainee/profile"
@@ -453,7 +483,9 @@ const InternshipDetailsPage = () => {
               Go to profile and upload CV
             </Link>
           ) : null}
-          {profileReady && !hasRequiredSkillMatch ? (
+          {journeyTarget.progress.routeType === "details" &&
+          profileReady &&
+          !hasRequiredSkillMatch ? (
             <p className="text-xs text-amber-700">
               This internship requires at least one skill that exists in your
               saved profile skills.

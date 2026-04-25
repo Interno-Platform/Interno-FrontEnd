@@ -1,6 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { CheckCircle2, Clock3, Hash, Medal, ServerCrash, User2 } from "lucide-react";
+import {
+  CheckCircle2,
+  Clock3,
+  Hash,
+  Medal,
+  ServerCrash,
+  User2,
+} from "lucide-react";
 import Card from "@/components/common/Card";
 import Button from "@/components/common/Button";
 import Badge from "@/components/common/Badge";
@@ -79,7 +86,7 @@ const ExamResultPage = () => {
 
   return (
     <div className="mx-auto max-w-5xl space-y-5">
-      <Card className="overflow-hidden border-slate-200 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800 p-0 text-white shadow-xl">
+      <Card className="overflow-hidden mt-5 border-slate-200 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800 p-0 text-white shadow-xl">
         <div className="grid gap-6 p-6 md:grid-cols-[1.3fr_0.7fr] md:p-8">
           <div className="space-y-4">
             <p className="text-sm uppercase tracking-[0.22em] text-slate-300">
@@ -89,10 +96,6 @@ const ExamResultPage = () => {
               <h1 className="text-3xl font-bold md:text-4xl">
                 {state.internship?.title || "Assessment flow"}
               </h1>
-              <p className="max-w-2xl text-sm leading-6 text-slate-300 md:text-base">
-                The quiz has been submitted and the backend status is shown
-                below with the exact score and submission timestamp.
-              </p>
             </div>
 
             <div className="flex flex-wrap gap-2">
@@ -116,7 +119,9 @@ const ExamResultPage = () => {
               </div>
               <div
                 className={`flex h-14 w-14 items-center justify-center rounded-2xl ${
-                  passed ? "bg-emerald-500/20 text-emerald-300" : "bg-amber-500/20 text-amber-300"
+                  passed
+                    ? "bg-emerald-500/20 text-emerald-300"
+                    : "bg-amber-500/20 text-amber-300"
                 }`}
               >
                 <Medal className="h-7 w-7" />
@@ -143,7 +148,9 @@ const ExamResultPage = () => {
 
       {isLoading ? (
         <Card className="space-y-2 border-slate-200 bg-slate-50">
-          <p className="text-sm font-medium text-slate-700">Loading status...</p>
+          <p className="text-sm font-medium text-slate-700">
+            Loading status...
+          </p>
           <p className="text-sm text-slate-500">
             Fetching the latest quiz status from the backend.
           </p>
@@ -161,80 +168,6 @@ const ExamResultPage = () => {
           </div>
         </Card>
       ) : null}
-
-      <div className="grid gap-4 md:grid-cols-2">
-        <Card className="space-y-4">
-          <div className="flex items-center gap-2">
-            <User2 className="h-5 w-5 text-slate-500" />
-            <h3 className="font-semibold">Submission Details</h3>
-          </div>
-
-          <div className="grid gap-3 sm:grid-cols-2">
-            <div className="rounded-2xl bg-slate-50 p-4">
-              <p className="text-xs uppercase tracking-wide text-slate-500">
-                Trainee ID
-              </p>
-              <p className="mt-1 text-lg font-semibold text-slate-900">
-                {quizStatus?.trainee_id ?? traineeId}
-              </p>
-            </div>
-            <div className="rounded-2xl bg-slate-50 p-4">
-              <p className="text-xs uppercase tracking-wide text-slate-500">
-                Exam ID
-              </p>
-              <p className="mt-1 text-lg font-semibold text-slate-900">
-                {quizStatus?.exam_id ?? examId}
-              </p>
-            </div>
-            <div className="rounded-2xl bg-slate-50 p-4">
-              <p className="text-xs uppercase tracking-wide text-slate-500">
-                Score
-              </p>
-              <p className="mt-1 text-lg font-semibold text-slate-900">
-                {quizStatus?.score ?? quizScore}%
-              </p>
-            </div>
-            <div className="rounded-2xl bg-slate-50 p-4">
-              <p className="text-xs uppercase tracking-wide text-slate-500">
-                Submitted
-              </p>
-              <p className="mt-1 text-lg font-semibold text-slate-900">
-                {submittedAt}
-              </p>
-            </div>
-          </div>
-        </Card>
-
-        <Card className="space-y-4">
-          <div className="flex items-center gap-2">
-            <Hash className="h-5 w-5 text-slate-500" />
-            <h3 className="font-semibold">Result Summary</h3>
-          </div>
-
-          {isQuizStage ? (
-            <>
-              <p className="text-sm text-slate-600">
-                Your quiz has been saved. Continue to the coding exam when
-                ready.
-              </p>
-              <div className="rounded-2xl bg-slate-50 p-4 text-sm text-slate-700">
-                Answered {answeredCount} of {totalQuestions} questions.
-                {!passed ? " The current score is below the pass threshold." : " You passed the quiz stage."}
-              </div>
-            </>
-          ) : (
-            <>
-              <p className="text-sm text-slate-600">
-                Your assessment and coding exam have been submitted
-                successfully.
-              </p>
-              <div className="rounded-2xl bg-slate-50 p-4 text-sm text-slate-700">
-                Exam language: {language}
-              </div>
-            </>
-          )}
-        </Card>
-      </div>
 
       <Card className="space-y-2">
         {isQuizStage ? (

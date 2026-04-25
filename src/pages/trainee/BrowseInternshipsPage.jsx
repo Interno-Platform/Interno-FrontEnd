@@ -8,7 +8,10 @@ import {
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import Card from "@/components/common/Card";
-import { getBrowseInternships } from "@/services/internshipDiscoveryService";
+import {
+  getBrowseInternships,
+  getInternshipJourneyTarget,
+} from "@/services/internshipDiscoveryService";
 import { getTraineeSkills } from "@/services/traineeService";
 import { useAuthStore } from "@/store/authStore";
 import { calcMatchScore } from "@/utils/helpers";
@@ -99,16 +102,17 @@ const BrowseInternshipsPage = () => {
     [industry, internships, search, traineeSkills],
   );
 
-  const openDetails = (internship) => {
-    navigate(`/trainee/internships/${internship.id}`, {
-      state: { internship },
+  const openJourney = (internship) => {
+    const target = getInternshipJourneyTarget(internship, traineeId);
+    navigate(target.to, {
+      state: target.state,
     });
   };
 
   const handleCardKeyDown = (event, internship) => {
     if (event.key === "Enter" || event.key === " ") {
       event.preventDefault();
-      openDetails(internship);
+      openJourney(internship);
     }
   };
 
@@ -180,7 +184,7 @@ const BrowseInternshipsPage = () => {
           <Card
             key={internship.id}
             className="group cursor-pointer space-y-3 border-slate-200 hover:-translate-y-1 hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#164616]/20"
-            onClick={() => openDetails(internship)}
+            onClick={() => openJourney(internship)}
             onKeyDown={(event) => handleCardKeyDown(event, internship)}
             role="button"
             tabIndex={0}
@@ -191,6 +195,11 @@ const BrowseInternshipsPage = () => {
               </span>
               <span className="text-xs font-medium text-slate-500">
                 {internship.duration}
+              </span>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <span className="rounded-full bg-slate-50 px-2.5 py-1 text-xs font-semibold text-slate-700">
+                {internship.progress?.label || "Not applied"}
               </span>
             </div>
             <h3 className="text-lg font-bold text-slate-900">
@@ -243,11 +252,11 @@ const BrowseInternshipsPage = () => {
                 className="flex-1 rounded-lg bg-[#164616] px-3 py-2 text-center text-sm font-semibold text-white hover:bg-[#123a12]"
                 onClick={(event) => {
                   event.stopPropagation();
-                  openDetails(internship);
+                  openJourney(internship);
                 }}
                 type="button"
               >
-                Apply now
+                {internship.progress?.actionLabel || "Open stage"}
               </button>
             </div>
           </Card>

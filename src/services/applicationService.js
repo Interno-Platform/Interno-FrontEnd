@@ -4,14 +4,25 @@ const normalizeArrayResponse = (responseData) => {
   const payload = responseData?.data || responseData;
   const list = Array.isArray(payload?.data)
     ? payload.data
-    : Array.isArray(payload)
-      ? payload
-      : [];
+    : Array.isArray(payload?.applications)
+      ? payload.applications
+      : Array.isArray(payload?.items)
+        ? payload.items
+        : Array.isArray(payload?.results)
+          ? payload.results
+          : Array.isArray(payload)
+            ? payload
+            : [];
 
   return {
     ...payload,
     data: list,
-    count: payload?.count ?? list.length,
+    count:
+      payload?.count ??
+      payload?.total ??
+      payload?.totalCount ??
+      payload?.applications_count ??
+      list.length,
     message: responseData?.message || payload?.message,
   };
 };
@@ -58,9 +69,9 @@ export const getInternshipApplications = async (internshipId) => {
   return normalizeArrayResponse(response.data);
 };
 
-// Review Application - PUT /api/applications/:applicationId/review
+// Review Application - PUT /api/internships/:applicationId/review
 export const reviewApplication = async (applicationId, status, notes) => {
-  const response = await api.put(`/api/applications/${applicationId}/review`, {
+  const response = await api.put(`/api/internships/${applicationId}/review`, {
     status,
     notes,
   });

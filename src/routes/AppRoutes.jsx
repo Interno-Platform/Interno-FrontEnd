@@ -25,6 +25,7 @@ import CompanyDashboardPage from "@/pages/company/DashboardPage";
 import CompanyInternshipsPage from "@/pages/company/InternshipsPage";
 import CompanyInternshipDetailsPage from "@/pages/company/InternshipDetailsPage";
 import CompanyApplicantsPage from "@/pages/company/ApplicantsPage";
+import CompanyApplicantDetailsPage from "@/pages/company/ApplicantDetailsPage";
 import CompanyTraineesPage from "@/pages/company/TraineesPage";
 import CompanyAssessmentsPage from "@/pages/company/AssessmentsPage";
 import CompanySettingsPage from "@/pages/company/SettingsPage";
@@ -96,7 +97,14 @@ const AppRoutes = () => (
         path="internships/:internshipId"
         element={<CompanyInternshipDetailsPage />}
       />
-      <Route path="applicants" element={<CompanyApplicantsPage />} />
+      <Route
+        path="applicants/:internshipId?"
+        element={<CompanyApplicantsPage />}
+      />
+      <Route
+        path="applicants/:internshipId/details/:applicationId"
+        element={<CompanyApplicantDetailsPage />}
+      />
       <Route path="trainees" element={<CompanyTraineesPage />} />
       <Route path="assessments" element={<CompanyAssessmentsPage />} />
       <Route path="messages" element={<CompanyMessagesPage />} />
