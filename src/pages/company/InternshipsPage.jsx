@@ -31,23 +31,19 @@ const initialFormState = {
   duration_weeks: "",
   seats: "",
   deadline: "",
-  has_exam: false,
+  has_exam: true,
   selectedSkillId: "",
   required_skills: [],
+  exam_title: "",
+  exam_description: "",
+  requirements: "",
+  expected_input: "",
+  expected_output: "",
+  programmingLanguage: "javascript",
+  task_description: "",
+  exam_time_limit_minutes: "",
   exam_passing_score: "",
-  task_file: null,
-};
-
-const taskFileTemplate = {
-  title: "task title or null",
-  level: "Junior/Mid/Senior or null",
-  duration: "duration or null",
-  description: "task description or null",
-  requirements: ["requirement 1", "requirement 2"],
-  inputExample: "input example or null",
-  expectedOutput: "expected output or null",
-  submissionInstructions: "submission instructions or null",
-  programmingLanguage: "programming language or null",
+  exam_instructions: "",
 };
 
 const formatTimestamp = (value) => {
@@ -70,39 +66,60 @@ const formatTimestamp = (value) => {
   });
 };
 
-const internshipFormSchema = z
-  .object({
-    title: z.string().trim().min(3, "Title must be at least 3 characters."),
-    description: z
-      .string()
-      .trim()
-      .min(20, "Description must be at least 20 characters."),
-    location_type: z.enum(["REMOTE", "ONSITE", "HYBRID"]),
-    duration_weeks: z.coerce
-      .number()
-      .int()
-      .min(1, "Duration must be at least 1 week."),
-    seats: z.coerce.number().int().min(1, "Seats must be at least 1."),
-    deadline: z
-      .string()
-      .min(1, "Application deadline is required.")
-      .refine((value) => !Number.isNaN(new Date(value).getTime()), {
-        message: "Application deadline must be a valid date.",
-      }),
-    has_exam: z.boolean(),
-    required_skills: z
-      .array(z.coerce.number().int().positive())
-      .min(1, "Please select at least one required skill."),
-    exam_passing_score: z
-      .union([z.literal(""), z.coerce.number().min(0).max(100)])
-      .optional(),
-    task_file: z.any().nullable(),
-  })
-  .superRefine((data, ctx) => {
-    if (!data.has_exam) {
-      return;
-    }
-  });
+const internshipFormSchema = z.object({
+  title: z.string().trim().min(3, "Title must be at least 3 characters."),
+  description: z
+    .string()
+    .trim()
+    .min(20, "Description must be at least 20 characters."),
+  location_type: z.enum(["REMOTE", "ONSITE", "HYBRID"]),
+  duration_weeks: z.coerce
+    .number()
+    .int()
+    .min(1, "Duration must be at least 1 week."),
+  seats: z.coerce.number().int().min(1, "Seats must be at least 1."),
+  deadline: z
+    .string()
+    .min(1, "Application deadline is required.")
+    .refine((value) => !Number.isNaN(new Date(value).getTime()), {
+      message: "Application deadline must be a valid date.",
+    }),
+  has_exam: z.literal(true),
+  required_skills: z
+    .array(z.coerce.number().int().positive())
+    .min(1, "Please select at least one required skill."),
+  exam_title: z.string().trim().min(1, "Exam title is required."),
+  exam_description: z.string().trim().min(1, "Exam description is required."),
+  requirements: z
+    .string()
+    .transform((value) =>
+      value
+        .split("\n")
+        .map((item) => item.trim())
+        .filter(Boolean),
+    )
+    .refine((value) => value.length > 0, {
+      message: "At least one requirement is required.",
+    }),
+  expected_input: z.string().trim().min(1, "Expected input is required."),
+  expected_output: z.string().trim().min(1, "Expected output is required."),
+  programmingLanguage: z
+    .string()
+    .trim()
+    .min(1, "Programming language is required."),
+  task_description: z
+    .string()
+    .trim()
+    .min(10, "Task description must be at least 10 characters."),
+  exam_time_limit_minutes: z
+    .union([z.literal(""), z.coerce.number().int().min(1)])
+    .optional(),
+  exam_passing_score: z.coerce
+    .number()
+    .min(0, "Passing score must be at least 0.")
+    .max(100, "Passing score cannot exceed 100."),
+  exam_instructions: z.string().optional(),
+});
 
 const CompanyInternshipsPage = () => {
   const [open, setOpen] = useState(false);
@@ -221,16 +238,6 @@ const CompanyInternshipsPage = () => {
   const handleFormChange = (event) => {
     const { name, value, type, checked } = event.target;
 
-    if (name === "has_exam" && !checked) {
-      setForm((prev) => ({
-        ...prev,
-        has_exam: false,
-        exam_passing_score: "",
-        task_file: null,
-      }));
-      return;
-    }
-
     if (name === "selectedSkillId") {
       const selectedId = Number(value);
 
@@ -267,11 +274,6 @@ const CompanyInternshipsPage = () => {
     }));
   };
 
-  const handleFileChange = (event) => {
-    const file = event.target.files?.[0] || null;
-    setForm((prev) => ({ ...prev, task_file: file }));
-  };
-
   const handleCreateInternship = async (event) => {
     event.preventDefault();
 
@@ -305,7 +307,20 @@ const CompanyInternshipsPage = () => {
       seats: validForm.seats,
       deadline: validForm.deadline,
       required_skills: validForm.required_skills,
-      has_exam: validForm.has_exam,
+      has_exam: true,
+      exam_title: validForm.exam_title,
+      exam_description: validForm.exam_description,
+      requirements: validForm.requirements,
+      expected_input: validForm.expected_input,
+      expected_output: validForm.expected_output,
+      programmingLanguage: validForm.programmingLanguage,
+      task_description: validForm.task_description,
+      exam_time_limit_minutes:
+        validForm.exam_time_limit_minutes === ""
+          ? undefined
+          : Number(validForm.exam_time_limit_minutes),
+      exam_passing_score: Number(validForm.exam_passing_score),
+      exam_instructions: validForm.exam_instructions?.trim() || undefined,
     };
 
     setIsSubmitting(true);
@@ -317,8 +332,20 @@ const CompanyInternshipsPage = () => {
         created?.data?.id ||
         created?.id;
 
+      if (!internshipId) {
+        throw new Error(
+          "Internship was created, but internship ID is missing for tech exam.",
+        );
+      }
+
       await addTechnicalExam(companyId, {
-        ...(validForm.has_exam && { task_file: validForm.task_file }),
+        internship_id: internshipId,
+        exam_title: validForm.exam_title,
+        exam_description: validForm.exam_description,
+        requirements: validForm.requirements,
+        expected_input: validForm.expected_input,
+        expected_output: validForm.expected_output,
+        programmingLanguage: validForm.programmingLanguage,
       });
 
       notify.success(created?.message || "Internship posted successfully.");
@@ -621,53 +648,141 @@ const CompanyInternshipsPage = () => {
           </div>
 
           <div className="rounded-2xl border border-border bg-white p-4 shadow-sm dark:bg-card">
-            <div className="mb-4 flex items-center justify-between gap-3">
+            <div className="mb-4">
               <div>
                 <h4 className="text-sm font-semibold text-slate-900 dark:text-foreground">
                   Technical exam
                 </h4>
                 <p className="text-xs text-slate-500 dark:text-muted-foreground">
-                  Optional assessment that can be attached to the internship.
+                  Technical exam is mandatory for every internship.
                 </p>
               </div>
-              <label className="inline-flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-foreground">
-                <input
-                  checked={form.has_exam}
-                  name="has_exam"
-                  onChange={handleFormChange}
-                  type="checkbox"
-                />
-                Include exam
-              </label>
             </div>
 
-            {form.has_exam ? (
-              <div className="grid gap-3 md:grid-cols-2">
-                <label className="md:col-span-2 block space-y-1">
-                  <span className="text-sm font-semibold text-slate-700 dark:text-foreground">
-                    Task file
-                  </span>
-                  <input
-                    accept=".json,.pdf,.doc,.docx,.txt,.png,.jpg,.jpeg"
-                    className="field-input"
-                    onChange={handleFileChange}
-                    required
-                    type="file"
-                  />
-                  <p className="text-xs leading-5 text-slate-500 dark:text-muted-foreground">
-                    The task file should follow this structure:
-                  </p>
-                  <pre className="overflow-x-auto rounded-xl border border-slate-200 bg-slate-950 px-3 py-3 text-xs leading-5 text-slate-100 dark:border-border dark:bg-slate-950">
-                    {JSON.stringify(taskFileTemplate, null, 2)}
-                  </pre>
-                  {form.task_file ? (
-                    <p className="text-xs text-slate-500 dark:text-muted-foreground">
-                      Selected: {form.task_file.name}
-                    </p>
-                  ) : null}
-                </label>
-              </div>
-            ) : null}
+            <div className="grid gap-3 md:grid-cols-2">
+              <Input
+                label="Exam title"
+                name="exam_title"
+                onChange={handleFormChange}
+                placeholder="e.g. Frontend React Coding Exam"
+                required
+                value={form.exam_title}
+              />
+
+              <Select
+                label="Programming language"
+                name="programmingLanguage"
+                onChange={handleFormChange}
+                value={form.programmingLanguage}
+              >
+                <option value="javascript">JavaScript</option>
+                <option value="python">Python</option>
+                <option value="cpp">C++</option>
+              </Select>
+
+              <label className="md:col-span-2 block space-y-1">
+                <span className="text-sm font-semibold text-slate-700 dark:text-foreground">
+                  Exam description
+                </span>
+                <textarea
+                  className="field-input min-h-24"
+                  name="exam_description"
+                  onChange={handleFormChange}
+                  required
+                  rows="3"
+                  value={form.exam_description}
+                />
+              </label>
+
+              <label className="md:col-span-2 block space-y-1">
+                <span className="text-sm font-semibold text-slate-700 dark:text-foreground">
+                  Requirements (one per line)
+                </span>
+                <textarea
+                  className="field-input min-h-24"
+                  name="requirements"
+                  onChange={handleFormChange}
+                  required
+                  rows="4"
+                  value={form.requirements}
+                />
+              </label>
+
+              <label className="block space-y-1 md:col-span-1">
+                <span className="text-sm font-semibold text-slate-700 dark:text-foreground">
+                  Expected input
+                </span>
+                <textarea
+                  className="field-input min-h-24"
+                  name="expected_input"
+                  onChange={handleFormChange}
+                  required
+                  rows="3"
+                  value={form.expected_input}
+                />
+              </label>
+
+              <label className="block space-y-1 md:col-span-1">
+                <span className="text-sm font-semibold text-slate-700 dark:text-foreground">
+                  Expected output
+                </span>
+                <textarea
+                  className="field-input min-h-24"
+                  name="expected_output"
+                  onChange={handleFormChange}
+                  required
+                  rows="3"
+                  value={form.expected_output}
+                />
+              </label>
+
+              <label className="md:col-span-2 block space-y-1">
+                <span className="text-sm font-semibold text-slate-700 dark:text-foreground">
+                  Task description
+                </span>
+                <textarea
+                  className="field-input min-h-28"
+                  name="task_description"
+                  onChange={handleFormChange}
+                  required
+                  rows="4"
+                  value={form.task_description}
+                />
+              </label>
+
+              <Input
+                label="Exam time limit (minutes)"
+                min="1"
+                name="exam_time_limit_minutes"
+                onChange={handleFormChange}
+                type="number"
+                value={form.exam_time_limit_minutes}
+              />
+
+              <Input
+                label="Passing score (%)"
+                max="100"
+                min="0"
+                name="exam_passing_score"
+                onChange={handleFormChange}
+                required
+                type="number"
+                value={form.exam_passing_score}
+              />
+
+              <label className="md:col-span-2 block space-y-1">
+                <span className="text-sm font-semibold text-slate-700 dark:text-foreground">
+                  Exam instructions
+                </span>
+                <textarea
+                  className="field-input min-h-24"
+                  name="exam_instructions"
+                  onChange={handleFormChange}
+                  rows="3"
+                  value={form.exam_instructions}
+                />
+              </label>
+            </div>
           </div>
 
           <div className="flex gap-2 pt-1">
