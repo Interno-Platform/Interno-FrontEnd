@@ -15,11 +15,14 @@ import Button from "@/components/common/Button";
 import Modal from "@/components/common/Modal";
 import Input from "@/components/common/Input";
 import Select from "@/components/common/Select";
+import SkillsManagement from "@/components/common/SkillsManagement";
 import { notify } from "@/utils/notify";
+import { cleanSkills, isValidSkillsArray } from "@/utils/cleanSkills";
 import {
   addTechnicalExam,
   createInternship,
   getInternships,
+  insertSkills,
 } from "@/services/companyService";
 import { getAllSkills } from "@/services/skillsService";
 import { useAuthStore } from "@/store/authStore";
@@ -129,6 +132,9 @@ const CompanyInternshipsPage = () => {
   const [loadError, setLoadError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [form, setForm] = useState(initialFormState);
+  const [customSkills, setCustomSkills] = useState([]);
+  const [isSubmittingCustomSkills, setIsSubmittingCustomSkills] =
+    useState(false);
   const { user } = useAuthStore();
   const companyId = user?.id;
 
@@ -233,6 +239,7 @@ const CompanyInternshipsPage = () => {
   const closeModal = () => {
     setOpen(false);
     setForm(initialFormState);
+    setCustomSkills([]);
   };
 
   const handleFormChange = (event) => {
@@ -272,6 +279,34 @@ const CompanyInternshipsPage = () => {
         (selectedId) => selectedId !== Number(skillId),
       ),
     }));
+  };
+
+  const handleCustomSkillsChange = async (cleanedSkills) => {
+    setCustomSkills(cleanedSkills);
+
+    // If we have cleaned skills, attempt to save them
+    if (isValidSkillsArray(cleanedSkills)) {
+      setIsSubmittingCustomSkills(true);
+      try {
+        const result = await insertSkills(companyId, cleanedSkills);
+        notify.success(result?.message || "skills has inserted successfully");
+        // Clear after successful save
+        setCustomSkills([]);
+        // Reload skills list
+        await loadSkills();
+      } catch (error) {
+        const status = error?.response?.status;
+        const errorMessage = error?.response?.data?.message || error?.message;
+
+        if (status === 400 || status === 404) {
+          notify.error(errorMessage);
+        } else {
+          notify.error(errorMessage || "Failed to insert skills");
+        }
+      } finally {
+        setIsSubmittingCustomSkills(false);
+      }
+    }
   };
 
   const handleCreateInternship = async (event) => {
@@ -646,6 +681,11 @@ const CompanyInternshipsPage = () => {
               )}
             </div>
           </div>
+
+          <SkillsManagement
+            onSkillsChange={handleCustomSkillsChange}
+            initialSkills={customSkills}
+          />
 
           <div className="rounded-2xl border border-border bg-white p-4 shadow-sm dark:bg-card">
             <div className="mb-4">

@@ -86,3 +86,12 @@ export const addTechnicalExam = async (companyId, examData) => {
   });
   return response.data;
 };
+
+// Insert Skills - POST /api/company/insert-skills/:company_id
+export const insertSkills = async (companyId, skills) => {
+  const response = await api.post(
+    `/api/company/insert-skills/${companyId}`,
+    { skills },
+  );
+  return response.data;
+};
