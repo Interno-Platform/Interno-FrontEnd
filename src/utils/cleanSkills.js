@@ -54,6 +54,8 @@ export const cleanSkills = (skills = []) => {
  */
 export const isValidSkillsArray = (skills) => {
   return (
-    Array.isArray(skills) && skills.length > 0 && skills.every((s) => s && String(s).trim().length > 0)
+    Array.isArray(skills) &&
+    skills.length > 0 &&
+    skills.every((s) => s && String(s).trim().length > 0)
   );
 };

@@ -92,7 +92,7 @@ const SkillsManagement = ({ onSkillsChange, initialSkills = [] }) => {
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               onKeyPress={(e) => {
-                if (e.key === 'Enter') {
+                if (e.key === "Enter") {
                   e.preventDefault();
                   handleAddSkill(e);
                 }
@@ -148,7 +148,8 @@ const SkillsManagement = ({ onSkillsChange, initialSkills = [] }) => {
         </Button>
         {customSkills.length > 0 && (
           <span className="text-xs text-slate-500 dark:text-muted-foreground">
-            {customSkills.length} skill{customSkills.length !== 1 ? "s" : ""} to save
+            {customSkills.length} skill{customSkills.length !== 1 ? "s" : ""} to
+            save
           </span>
         )}
       </div>
