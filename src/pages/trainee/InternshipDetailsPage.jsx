@@ -63,6 +63,7 @@ const InternshipDetailsPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { user } = useAuthStore();
+  const traineeId = Number(user?.id);
   const {
     cvFile,
     hasCvUploaded,
@@ -110,7 +111,6 @@ const InternshipDetailsPage = () => {
     loadInternship();
   }, [internshipId, location.state?.internship]);
 
-  const traineeId = Number(user?.id);
   const normalizedSavedSkills = useMemo(
     () =>
       (Array.isArray(savedSkills) ? savedSkills : [])
