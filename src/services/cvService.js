@@ -1,5 +1,6 @@
 import { insertTraineeSkills } from "./traineeService";
 import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf.mjs";
+import pdfWorkerSource from "pdfjs-dist/legacy/build/pdf.worker.min.mjs?raw";
 
 const GROQ_URL = "https://api.groq.com/openai/v1/chat/completions";
 const GROQ_MODEL = import.meta.env.VITE_GROQ_MODEL || "llama-3.3-70b-versatile";
@@ -13,6 +14,11 @@ const SUPPORTED_TYPES = [
 const MAX_TEXT_CHARS = 50000;
 const MAX_CHUNK_CHARS = 3500;
 const MAX_CHUNKS = 12;
+
+const pdfWorkerBlobUrl = URL.createObjectURL(
+  new Blob([pdfWorkerSource], { type: "text/javascript" }),
+);
+pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorkerBlobUrl;
 
 const normalizeText = (value) =>
   String(value || "")
@@ -190,9 +196,7 @@ const splitIntoChunks = (text, maxChunkChars) => {
 const extractTextFromPdf = async (file) => {
   const buffer = await file.arrayBuffer();
   const document = await pdfjsLib
-    // Some production servers serve .mjs with a non-JS MIME type,
-    // which breaks worker module loading. Parsing on main thread avoids that.
-    .getDocument({ data: new Uint8Array(buffer), disableWorker: true })
+    .getDocument({ data: new Uint8Array(buffer) })
     .promise;
 
   const pagesText = [];
