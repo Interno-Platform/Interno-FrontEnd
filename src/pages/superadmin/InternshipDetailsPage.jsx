@@ -110,7 +110,8 @@ const InternshipDetailsPage = () => {
 
   const updateStatus = async (status) => {
     const targetCompanyId = internship?.company_id || companyId;
-    const targetInternshipId = internship?.id || internship?.internship_id || internshipId;
+    const targetInternshipId =
+      internship?.id || internship?.internship_id || internshipId;
     const key = `${targetCompanyId}-${internshipId}-${status}`;
     setActionKey(key);
     try {
