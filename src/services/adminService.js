@@ -72,9 +72,9 @@ export const getAllTrainees = async () => {
 };
 
 // Change Internship Status - POST /api/admin/internship-status
-export const changeInternshipStatus = async (companyId, status) => {
+export const changeInternshipStatus = async (companyId, internshipId, status) => {
   const response = await api.post(
-    `/api/admin/internship-status?company_id=${companyId}`,
+    `/api/admin/internship-status?company_id=${companyId}&internship_id=${internshipId}`,
     { status },
   );
   return response.data;

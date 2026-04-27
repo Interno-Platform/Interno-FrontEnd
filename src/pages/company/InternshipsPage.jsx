@@ -19,7 +19,6 @@ import SkillsManagement from "@/components/common/SkillsManagement";
 import { notify } from "@/utils/notify";
 import { cleanSkills, isValidSkillsArray } from "@/utils/cleanSkills";
 import {
-  addTechnicalExam,
   createInternship,
   getInternships,
   insertSkills,
@@ -131,6 +130,7 @@ const CompanyInternshipsPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [loadError, setLoadError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isApprovalPopupOpen, setIsApprovalPopupOpen] = useState(false);
   const [form, setForm] = useState(initialFormState);
   const [customSkills, setCustomSkills] = useState([]);
   const [isSubmittingCustomSkills, setIsSubmittingCustomSkills] =
@@ -360,31 +360,9 @@ const CompanyInternshipsPage = () => {
 
     setIsSubmitting(true);
     try {
-      const created = await createInternship(companyId, internshipData);
-      const internshipId =
-        created?.internship_id ||
-        created?.data?.internship_id ||
-        created?.data?.id ||
-        created?.id;
-
-      if (!internshipId) {
-        throw new Error(
-          "Internship was created, but internship ID is missing for tech exam.",
-        );
-      }
-
-      await addTechnicalExam(companyId, {
-        internship_id: internshipId,
-        exam_title: validForm.exam_title,
-        exam_description: validForm.exam_description,
-        requirements: validForm.requirements,
-        expected_input: validForm.expected_input,
-        expected_output: validForm.expected_output,
-        programmingLanguage: validForm.programmingLanguage,
-      });
-
-      notify.success(created?.message || "Internship posted successfully.");
+      await createInternship(companyId, internshipData);
       closeModal();
+      setIsApprovalPopupOpen(true);
       await loadInternships();
     } catch (error) {
       notify.error(error?.message, "Failed to create internship.");
@@ -843,6 +821,27 @@ const CompanyInternshipsPage = () => {
             </Button>
           </div>
         </form>
+      </Modal>
+
+      <Modal
+        onClose={() => setIsApprovalPopupOpen(false)}
+        open={isApprovalPopupOpen}
+        title="Internship Submitted"
+      >
+        <div className="space-y-4">
+          <p className="text-sm leading-6 text-slate-700 dark:text-muted-foreground">
+            Internship created successfully. It is now pending admin approval.
+          </p>
+          <div className="flex justify-end">
+            <Button
+              className="!bg-[#164616] hover:!bg-[#123a12]"
+              onClick={() => setIsApprovalPopupOpen(false)}
+              type="button"
+            >
+              OK
+            </Button>
+          </div>
+        </div>
       </Modal>
     </div>
   );
