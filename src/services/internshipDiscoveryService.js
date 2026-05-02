@@ -1,4 +1,3 @@
-import { getApprovedCompanies } from "@/services/adminService";
 import { getInternships } from "@/services/companyService";
 import { getAllSkills } from "@/services/skillsService";
 
@@ -167,13 +166,13 @@ const normalizeInternship = (item, companyName, skillMap) => {
 };
 
 export const getBrowseInternships = async () => {
-  const [companiesResponse, skillsResponse] = await Promise.all([
-    getApprovedCompanies(),
+  const [internshipsResponse, skillsResponse] = await Promise.all([
+    getInternships(),
     getAllSkills(),
   ]);
 
-  const companies = Array.isArray(companiesResponse?.data)
-    ? companiesResponse.data
+  const internships = Array.isArray(internshipsResponse?.data)
+    ? internshipsResponse.data
     : [];
 
   const skillsPayload = skillsResponse?.data || skillsResponse;
@@ -184,29 +183,15 @@ export const getBrowseInternships = async () => {
       : [];
   const skillMap = toSkillMap(skillsList);
 
-  const companyInternships = await Promise.allSettled(
-    companies.map(async (company) => {
-      const companyId = Number(company?.id);
-      if (!companyId) {
-        return [];
-      }
-      const response = await getInternships(companyId);
-      const list = Array.isArray(response?.data) ? response.data : [];
-      return list.map((item) =>
-        normalizeInternship(
-          item,
-          company?.company_name || company?.name,
-          skillMap,
-        ),
-      );
-    }),
-  );
-
-  const internships = companyInternships.flatMap((result) =>
-    result.status === "fulfilled" ? result.value : [],
-  );
-
-  return internships.filter((item) => item.id);
+  return internships
+    .map((item) =>
+      normalizeInternship(
+        item,
+        item?.company_name || item?.name || "Unknown Company",
+        skillMap,
+      ),
+    )
+    .filter((item) => item.id);
 };
 
 export const getInternshipById = async (internshipId) => {

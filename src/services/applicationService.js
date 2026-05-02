@@ -77,3 +77,9 @@ export const reviewApplication = async (applicationId, status, notes) => {
   });
   return response.data;
 };
+
+// Get Internship Details - GET /api/internships/:internshipId
+export const getInternshipDetails = async (internshipId) => {
+  const response = await api.get(`/api/internships/${internshipId}`);
+  return response.data?.data || response.data;
+};

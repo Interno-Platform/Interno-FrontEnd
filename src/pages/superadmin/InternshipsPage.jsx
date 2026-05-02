@@ -90,7 +90,18 @@ const InternshipsPage = () => {
   );
 
   useEffect(() => {
-    loadInternships();
+    let ignore = false;
+
+    const run = async () => {
+      if (ignore) return;
+      await loadInternships();
+    };
+
+    run();
+
+    return () => {
+      ignore = true;
+    };
   }, []);
 
   return (

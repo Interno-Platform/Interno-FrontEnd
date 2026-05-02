@@ -15,6 +15,11 @@ import {
   getTraineeSkills,
 } from "@/services/traineeService";
 import { useAuthStore } from "@/store/authStore";
+import { updateUserProfile } from "@/services/authService";
+import {
+  calculateTraineeProfileCompletion,
+  hasCompleteProfileInfo,
+} from "@/utils/traineeProfileCompletion";
 import { notify } from "@/utils/notify";
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
@@ -58,10 +63,15 @@ const buildProfileForm = (user) => {
   const details = user?.details || {};
 
   return {
-    fullName: user?.name || details?.name || "",
+    name: user?.name || details?.name || "",
     email: user?.email || details?.email || "",
     phone: details?.phone || user?.phone || "",
     university: details?.university || user?.university || "",
+    gender: details?.gender || user?.gender || "",
+    city: details?.city || user?.city || "",
+    major: details?.major || user?.major || "",
+    graduation_year:
+      details?.graduation_year || user?.graduation_year || "",
     // TODO: Re-enable bio field when backend/database support is added.
   };
 };
@@ -87,12 +97,6 @@ const toProgressNumber = (value) => {
 
 const hasAnyText = (value) => String(value ?? "").trim().length > 0;
 
-const hasCompleteProfileInfo = (form) =>
-  hasAnyText(form?.fullName) &&
-  hasAnyText(form?.email) &&
-  hasAnyText(form?.phone) &&
-  hasAnyText(form?.university);
-
 const hasCvFromPayload = (payload) =>
   toBoolean(payload?.data?.has_cv) ||
   toBoolean(payload?.data?.cv_uploaded) ||
@@ -112,12 +116,13 @@ const hasCvFromPayload = (payload) =>
 const TraineeProfilePage = () => {
   const [manualSkill, setManualSkill] = useState("");
   const [isSavingSkills, setIsSavingSkills] = useState(false);
+  const [isSavingProfile, setIsSavingProfile] = useState(false);
   const [profileForm, setProfileForm] = useState(() => buildProfileForm(null));
   const [profileProgress, setProfileProgress] = useState(0);
   const [skillProgress, setSkillProgress] = useState([]);
   const [isProgressLoading, setIsProgressLoading] = useState(false);
   const [isSavedSkillsLoading, setIsSavedSkillsLoading] = useState(false);
-  const { user } = useAuthStore();
+  const { user, updateUser } = useAuthStore();
   const traineeId = Number(user?.id);
 
   useEffect(() => {
@@ -140,6 +145,7 @@ const TraineeProfilePage = () => {
     removeSkill,
     addSkill,
     setSavedSkills,
+    updateProfileData,
   } = useTraineeStore();
 
   const hasProfileInfo = useMemo(
@@ -148,15 +154,18 @@ const TraineeProfilePage = () => {
   );
 
   const hasUploadedCv = Boolean(cvFile) || Boolean(hasCvUploaded);
-  const hasReadinessData = hasUploadedCv || hasProfileInfo;
   const hasAnySkills = useMemo(
     () => extractedSkills.length > 0 || savedSkills.length > 0,
     [extractedSkills, savedSkills],
   );
-  const canApply = hasReadinessData && hasAnySkills;
   const profileCompletion = useMemo(
-    () => Math.max(profileProgress, canApply ? 100 : 0),
-    [profileProgress, canApply],
+    () =>
+      calculateTraineeProfileCompletion({
+        hasCv: hasUploadedCv,
+        hasProfileInfo,
+        hasSkills: hasAnySkills,
+      }),
+    [hasAnySkills, hasProfileInfo, hasUploadedCv],
   );
 
   const loadTraineeProgress = useCallback(async () => {
@@ -177,30 +186,33 @@ const TraineeProfilePage = () => {
 
       const hasCvLocal =
         Boolean(cvFile) || Boolean(hasCvUploaded) || hasCvFromApi;
-      const hasReadinessLocal = hasCvLocal || hasProfileInfo;
       const hasSkillsLocal = hasAnySkills;
-
       const normalizedProgress = toProgressNumber(rawProgress);
-      const computedProgress =
-        hasReadinessLocal && hasSkillsLocal
-          ? 100
-          : hasReadinessLocal || hasSkillsLocal
-            ? 50
-            : 0;
+      const computedProgress = calculateTraineeProfileCompletion({
+        hasCv: hasCvLocal,
+        hasProfileInfo,
+        hasSkills: hasSkillsLocal,
+      });
 
-      setProfileProgress(Math.max(normalizedProgress, computedProgress));
+      setProfileProgress(
+        computedProgress === 100
+          ? Math.max(normalizedProgress, computedProgress)
+          : Math.min(
+              normalizedProgress || computedProgress,
+              computedProgress,
+            ),
+      );
       setSkillProgress(normalizeSkillsPayload(response));
     } catch (error) {
       const hasCvLocal = Boolean(cvFile) || Boolean(hasCvUploaded);
-      const hasReadinessLocal = hasCvLocal || hasProfileInfo;
       const hasSkillsLocal = hasAnySkills;
 
       setProfileProgress(
-        hasReadinessLocal && hasSkillsLocal
-          ? 100
-          : hasReadinessLocal || hasSkillsLocal
-            ? 50
-            : 0,
+        calculateTraineeProfileCompletion({
+          hasCv: hasCvLocal,
+          hasProfileInfo,
+          hasSkills: hasSkillsLocal,
+        }),
       );
       notify.error(error?.message, "Failed to load profile progress.");
     } finally {
@@ -312,8 +324,55 @@ const TraineeProfilePage = () => {
     }));
   };
 
-  const handleSaveProfile = () => {
-    notify.success("Profile updated locally from login data.");
+  const handleSaveProfile = async () => {
+    if (!traineeId) {
+      notify.error("Trainee account not found. Please sign in again.");
+      return;
+    }
+
+    const profileData = {
+      name: profileForm.name,
+      email: profileForm.email,
+      phone: profileForm.phone,
+      university: profileForm.university,
+      gender: profileForm.gender,
+      city: profileForm.city,
+      major: profileForm.major,
+      graduation_year: profileForm.graduation_year,
+    };
+
+    // Filter out empty values
+    const filteredData = Object.entries(profileData).reduce(
+      (acc, [key, value]) => {
+        if (value && String(value).trim()) {
+          acc[key] = value;
+        }
+        return acc;
+      },
+      {},
+    );
+
+    if (Object.keys(filteredData).length === 0) {
+      notify.error("Please fill in at least one field.");
+      return;
+    }
+
+    setIsSavingProfile(true);
+    try {
+      await updateUserProfile(filteredData);
+      updateUser(filteredData);
+      updateProfileData(filteredData);
+      setProfileForm((prev) => ({
+        ...prev,
+        ...filteredData,
+      }));
+      await loadTraineeProgress();
+      notify.success("Profile updated successfully.");
+    } catch (error) {
+      notify.error(error?.message, "Failed to update profile.");
+    } finally {
+      setIsSavingProfile(false);
+    }
   };
 
   return (
@@ -343,19 +402,17 @@ const TraineeProfilePage = () => {
             />
           </div>
           <p className="text-xs text-slate-500">
-            {canApply
-              ? "Profile is ready for internship applications."
-              : !hasAnySkills
-                ? "Save at least one skill to complete your profile readiness."
-                : "Complete your profile information (or upload CV) to finish readiness."}
+            {profileCompletion === 100
+              ? "Your profile is ready for applying."
+              : `Complete your profile data, upload your CV, and save your skills (${profileCompletion}% complete).`}
           </p>
         </div>
         <div className="grid gap-4 md:grid-cols-2">
           <Input
             label="Full Name"
-            name="fullName"
+            name="name"
             onChange={handleProfileChange}
-            value={profileForm.fullName}
+            value={profileForm.name}
           />
           <Input
             label="Email"
@@ -375,13 +432,38 @@ const TraineeProfilePage = () => {
             onChange={handleProfileChange}
             value={profileForm.university}
           />
+          <Input
+            label="Major"
+            name="major"
+            onChange={handleProfileChange}
+            value={profileForm.major}
+          />
+          <Input
+            label="Graduation Year"
+            name="graduation_year"
+            onChange={handleProfileChange}
+            value={profileForm.graduation_year}
+          />
+          <Input
+            label="Gender"
+            name="gender"
+            onChange={handleProfileChange}
+            value={profileForm.gender}
+          />
+          <Input
+            label="City"
+            name="city"
+            onChange={handleProfileChange}
+            value={profileForm.city}
+          />
         </div>
         <Button
           className="!bg-[#164616] hover:!bg-[#123a12]"
+          disabled={isSavingProfile}
           onClick={handleSaveProfile}
           type="button"
         >
-          Save Profile
+          {isSavingProfile ? "Saving..." : "Save Profile"}
         </Button>
       </Card>
 

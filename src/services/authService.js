@@ -53,3 +53,25 @@ export const verifyEmail = async (userId, token) => {
   const response = await api.get(`/api/users/verify-code/${userId}/${token}`);
   return response.data;
 };
+
+// Update Profile - PUT /api/users/profile
+// Works for both trainee and company users
+export const updateUserProfile = async (profileData) => {
+  const formData = new FormData();
+
+  // Append all profile fields
+  Object.entries(profileData).forEach(([key, value]) => {
+    if (value !== null && value !== undefined && value !== "") {
+      if (value instanceof File) {
+        formData.append(key, value);
+      } else {
+        formData.append(key, String(value));
+      }
+    }
+  });
+
+  const response = await api.put("/api/users/profile", formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+  return response.data;
+};

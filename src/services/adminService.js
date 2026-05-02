@@ -31,7 +31,7 @@ const isApprovedInternship = (internship) =>
     String(internship?.status || "").toLowerCase(),
   );
 
-// Approve Company - POST /api/admin/approve-company/:company_id
+// Approve Company
 export const approveCompany = async (companyId) => {
   const response = await api.post(
     `/api/admin/approve-company/${companyId}`,
@@ -40,19 +40,19 @@ export const approveCompany = async (companyId) => {
   return response.data;
 };
 
-// Get Approved Companies - GET /api/admin/approved-companies
+// Get Approved Companies
 export const getApprovedCompanies = async () => {
   const response = await api.get("/api/admin/approved-companies");
   return normalizeListResponse(response.data);
 };
 
-// Get Pending Companies - GET /api/admin/pending-companies
+// Get Pending Companies
 export const getPendingCompanies = async () => {
   const response = await api.get("/api/admin/pending-companies");
   return normalizeListResponse(response.data);
 };
 
-// Change Company Status - POST /api/admin/account-status/:company_id
+// Change Company Status
 export const changeCompanyStatus = async (companyId, status) => {
   const normalizedStatus =
     typeof status === "boolean"
@@ -65,13 +65,13 @@ export const changeCompanyStatus = async (companyId, status) => {
   return response.data;
 };
 
-// Get All Trainees - GET /api/admin/trainees
+// Get All Trainees
 export const getAllTrainees = async () => {
   const response = await api.get("/api/admin/trainees");
   return normalizeListResponse(response.data);
 };
 
-// Change Internship Status - POST /api/admin/internship-status
+// Change Internship Status
 export const changeInternshipStatus = async (
   companyId,
   internshipId,
@@ -84,12 +84,11 @@ export const changeInternshipStatus = async (
   return response.data;
 };
 
-// Get Pending Internships - GET /api/admin/pending-internships
+// Get Pending Internships (FIXED DUPLICATES)
 export const getPendingInternships = async (companyId = null) => {
   if (companyId) {
-    const response = await api.get("/api/admin/pending-internships", {
-      params: { company_id: companyId },
-    });
+    const response = await api.get("/api/admin/pending-internships");
+
     return normalizeListResponse(response.data);
   }
 
@@ -99,14 +98,12 @@ export const getPendingInternships = async (companyId = null) => {
   ]);
 
   const companies = companyListResults.flatMap((result) => {
-    if (result.status !== "fulfilled") {
-      return [];
-    }
+    if (result.status !== "fulfilled") return [];
     return normalizeListResponse(result.value.data).data;
   });
 
   const uniqueCompanyIds = [
-    ...new Set(companies.map((company) => company?.id).filter(Boolean)),
+    ...new Set(companies.map((c) => String(c?.id)).filter(Boolean)),
   ];
 
   if (!uniqueCompanyIds.length) {
@@ -118,29 +115,29 @@ export const getPendingInternships = async (companyId = null) => {
   }
 
   const internshipResults = await Promise.allSettled(
-    uniqueCompanyIds.map((companyIdValue) =>
-      api.get("/api/admin/pending-internships", {
-        params: { company_id: companyIdValue },
-      }),
+    uniqueCompanyIds.map(() =>
+      api.get("/api/admin/pending-internships")
     ),
   );
 
-  const internships = internshipResults.flatMap((result) => {
-    if (result.status !== "fulfilled") {
-      return [];
-    }
+  const allInternships = internshipResults.flatMap((result) => {
+    if (result.status !== "fulfilled") return [];
     const normalized = normalizeListResponse(result.value.data);
     return normalized.data;
   });
 
+  // 🔥 HARD DEDUP (important fix)
+  const uniqueInternships = Array.from(
+    new Map(allInternships.map((i) => [i?.id, i])).values()
+  );
+
   return {
-    data: internships,
-    count: internships.length,
+    data: uniqueInternships,
+    count: uniqueInternships.length,
     message: "Pending internships retrieved.",
   };
 };
-
-// Get Approved Internships - Uses company internships and filters approved statuses
+// Get Approved Internships
 export const getApprovedInternships = async (companyId = null) => {
   const mapApproved = (items, company = null) =>
     (Array.isArray(items) ? items : [])
@@ -151,6 +148,7 @@ export const getApprovedInternships = async (companyId = null) => {
     const response = await api.get("/api/company/internships", {
       params: { company_id: companyId },
     });
+
     const normalized = normalizeListResponse(response.data);
     const approved = mapApproved(normalized.data);
 
@@ -180,22 +178,23 @@ export const getApprovedInternships = async (companyId = null) => {
   }
 
   const internshipsByCompany = await Promise.allSettled(
-    companyIds.map(async (id) => {
-      const response = await api.get("/api/company/internships", {
-        params: { company_id: id },
-      });
+    companyIds.map(async () => {
+      const response = await api.get("/api/company/internships");
+
       const normalized = normalizeListResponse(response.data);
-      const company =
-        companies.find(
-          (companyItem) => String(companyItem?.id) === String(id),
-        ) || null;
-      return mapApproved(normalized.data, company);
+      return normalized.data;
     }),
   );
 
-  const approvedInternships = internshipsByCompany.flatMap((result) =>
+  const allInternships = internshipsByCompany.flatMap((result) =>
     result.status === "fulfilled" ? result.value : [],
   );
+
+  const uniqueInternships = Array.from(
+    new Map(allInternships.map((i) => [i?.id, i])).values(),
+  );
+
+  const approvedInternships = uniqueInternships;
 
   return {
     data: approvedInternships,

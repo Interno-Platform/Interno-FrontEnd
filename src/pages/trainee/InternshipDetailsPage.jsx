@@ -13,6 +13,10 @@ import {
 } from "@/services/traineeService";
 import { useAuthStore } from "@/store/authStore";
 import { useTraineeStore } from "@/store/traineeStore";
+import {
+  calculateTraineeProfileCompletion,
+  hasCompleteProfileInfo,
+} from "@/utils/traineeProfileCompletion";
 import { notify } from "@/utils/notify";
 
 const toBoolean = (value) => {
@@ -35,12 +39,6 @@ const toProgressNumber = (value) => {
 };
 
 const hasAnyText = (value) => String(value ?? "").trim().length > 0;
-
-const hasCompleteProfileInfo = (profile) =>
-  hasAnyText(profile?.fullName) &&
-  hasAnyText(profile?.email) &&
-  hasAnyText(profile?.phone) &&
-  hasAnyText(profile?.university);
 
 const hasCvFromPayload = (payload) =>
   toBoolean(payload?.data?.has_cv) ||
@@ -139,7 +137,7 @@ const InternshipDetailsPage = () => {
     }
 
     const savedSet = new Set(normalizedSavedSkills);
-    return internshipSkills.some((skill) => savedSet.has(skill));
+    return internshipSkills.every((skill) => savedSet.has(skill));
   }, [internship?.skills, normalizedSavedSkills]);
 
   useEffect(() => {
@@ -211,38 +209,50 @@ const InternshipDetailsPage = () => {
             user?.university ??
             user?.details?.university,
         };
-        const hasProfileInfo = hasCompleteProfileInfo(profileFromApi);
-        const hasReadiness = hasCv || hasProfileInfo;
-
+        const hasProfileInfo = hasCompleteProfileInfo({
+          name: profileFromApi.fullName,
+          email: profileFromApi.email,
+          phone: profileFromApi.phone,
+          university: profileFromApi.university,
+        });
         const normalizedProgress = toProgressNumber(progressValue);
-        const computedProgress =
-          hasReadiness && hasSkills ? 100 : hasReadiness || hasSkills ? 50 : 0;
+        const computedProgress = calculateTraineeProfileCompletion({
+          hasCv,
+          hasProfileInfo,
+          hasSkills,
+        });
 
-        setProfileProgress(Math.max(normalizedProgress, computedProgress));
+        setProfileProgress(
+          computedProgress === 100
+            ? Math.max(normalizedProgress, computedProgress)
+            : Math.min(
+                normalizedProgress || computedProgress,
+                computedProgress,
+              ),
+        );
         setSavedSkills(
           normalizedSkills.length ? normalizedSkills : localSavedSkills,
         );
-        setProfileReady(hasReadiness && hasSkills);
+        setProfileReady(hasCv && hasProfileInfo && hasSkills);
       } catch (error) {
         const hasLocalSkills = localSavedSkills.length > 0;
         const hasLocalCv = Boolean(cvFile) || Boolean(hasCvUploaded);
         const hasLocalProfile = hasCompleteProfileInfo({
-          fullName: user?.name,
+          name: user?.name,
           email: user?.email,
           phone: user?.phone ?? user?.details?.phone,
           university: user?.university ?? user?.details?.university,
         });
-        const hasReadiness = hasLocalCv || hasLocalProfile;
 
         setProfileProgress(
-          hasReadiness && hasLocalSkills
-            ? 100
-            : hasReadiness || hasLocalSkills
-              ? 50
-              : 0,
+          calculateTraineeProfileCompletion({
+            hasCv: hasLocalCv,
+            hasProfileInfo: hasLocalProfile,
+            hasSkills: hasLocalSkills,
+          }),
         );
         setSavedSkills(localSavedSkills);
-        setProfileReady(hasReadiness && hasLocalSkills);
+        setProfileReady(hasLocalCv && hasLocalProfile && hasLocalSkills);
 
         notify.error(error?.message, "Failed to load profile progress.");
       } finally {
@@ -252,6 +262,43 @@ const InternshipDetailsPage = () => {
 
     loadProgress();
   }, [traineeId, cvFile, hasCvUploaded, localSavedSkills, user]);
+
+  const handleStartAssessment = async () => {
+    if (!internship) {
+      return;
+    }
+
+    if (!traineeId) {
+      notify.error("Trainee account not found. Please sign in again.");
+      return;
+    }
+
+    if (!profileReady) {
+      notify.info(
+        `Profile completion is ${profileProgress}%. Please complete your basic profile data, upload your CV, and save your skills first.`,
+      );
+      navigate("/trainee/profile", {
+        state: { from: location.pathname },
+      });
+      return;
+    }
+
+    if (!hasRequiredSkillMatch) {
+      notify.info(
+        "This internship requires at least one skill that exists in your saved profile skills.",
+      );
+      return;
+    }
+
+    // Navigate directly to assessment without applying
+    navigate(`/trainee/assessments/${internship.id}/instructions`, {
+      state: {
+        internship,
+        traineeId,
+        examId: internship.examId,
+      },
+    });
+  };
 
   const handleApply = async () => {
     if (!internship) {
@@ -265,7 +312,7 @@ const InternshipDetailsPage = () => {
 
     if (!profileReady) {
       notify.info(
-        `Profile completion is ${profileProgress}%. Please upload your CV or complete your profile data, then ensure your skills are saved.`,
+        `Profile completion is ${profileProgress}%. Please complete your basic profile data, upload your CV, and save your skills first.`,
       );
       navigate("/trainee/profile", {
         state: { from: location.pathname },
@@ -304,7 +351,7 @@ const InternshipDetailsPage = () => {
 
   const handlePrimaryAction = async () => {
     if (journeyTarget.progress.routeType === "details") {
-      await handleApply();
+      await handleStartAssessment();
       return;
     }
 
@@ -433,7 +480,7 @@ const InternshipDetailsPage = () => {
             <p className="mt-2 text-xs text-slate-500">
               {profileReady
                 ? "You are ready to apply."
-                : "Upload a CV or complete profile data, then save your skills to unlock Apply."}
+                : "Complete your basic profile data, upload your CV, and save your skills to unlock Apply."}
             </p>
           </div>
           <p className="inline-flex items-center gap-2 mr-5 text-sm text-slate-600">
@@ -460,8 +507,8 @@ const InternshipDetailsPage = () => {
                 ? profileReady && hasRequiredSkillMatch
                   ? "Apply for this internship"
                   : !profileReady
-                    ? "Complete profile: upload CV and save skills first"
-                    : "You need at least one required matching skill"
+                    ? "Complete profile, upload CV, and save skills first"
+                    : "This internship requires at least one skill that exists in your saved profile skills."
                 : journeyTarget.progress.actionLabel
             }
           >
@@ -471,7 +518,7 @@ const InternshipDetailsPage = () => {
                 : profileReady && hasRequiredSkillMatch
                   ? "Apply for this internship"
                   : !profileReady
-                    ? "Complete profile before apply"
+                    ? "Complete profile before applying"
                     : "No matching skill for this internship"
               : journeyTarget.progress.actionLabel}
           </button>

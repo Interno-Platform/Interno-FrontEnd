@@ -212,9 +212,11 @@ const ExamInstructionsPage = () => {
         return;
       }
 
-      const internshipId = Number(
-        internship?.id ?? internship?.internship_id ?? assessmentId,
-      );
+      const internshipId = Number(internship?.id ?? internship?.internship_id);
+      if (!Number.isFinite(internshipId)) {
+        throw new Error("Internship context is missing. Please start again.");
+      }
+
       const questionsResponse = await getQuestionsBySkills(
         requiredSkills,
         internshipId,

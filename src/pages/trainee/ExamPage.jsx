@@ -2,10 +2,7 @@ import { useMemo, useRef, useState } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import Button from "@/components/common/Button";
 import Card from "@/components/common/Card";
-import {
-  markQuizCompleted,
-  submitQuizAnswers,
-} from "@/services/traineeService";
+import { submitQuizAnswers } from "@/services/traineeService";
 import { notify } from "@/utils/notify";
 
 const getDraftStorageKey = (assessmentId, traineeId) =>
@@ -51,6 +48,26 @@ const isDuplicateQuizSubmissionError = (error) => {
   );
 };
 
+const extractQuizScore = (payload) => {
+  const candidates = [
+    payload?.data?.score,
+    payload?.score,
+    payload?.data?.quizScore,
+    payload?.quizScore,
+    payload?.data?.result?.score,
+    payload?.result?.score,
+  ];
+
+  for (const candidate of candidates) {
+    const numericValue = Number(candidate);
+    if (Number.isFinite(numericValue)) {
+      return numericValue;
+    }
+  }
+
+  return null;
+};
+
 const TraineeExamPage = () => {
   const { assessmentId } = useParams();
   const navigate = useNavigate();
@@ -62,6 +79,7 @@ const TraineeExamPage = () => {
   const internship = location.state?.internship || null;
   const traineeId = Number(location.state?.traineeId);
   const examId = Number(location.state?.examId || assessmentId);
+  const internshipId = Number(internship?.id ?? internship?.internship_id);
   const draftState = readDraftState(assessmentId, traineeId);
 
   const [index, setIndex] = useState(() =>
@@ -183,22 +201,27 @@ const TraineeExamPage = () => {
     }
 
     const answeredCount = payload.length;
-    const quizScore = Math.round((answeredCount / questionsList.length) * 100);
+
+    let submitResponse = null;
 
     try {
-      await submitQuizAnswers(traineeId, payload);
+      submitResponse = await submitQuizAnswers(
+        traineeId,
+        examId,
+        payload,
+        Number.isFinite(internshipId) ? internshipId : undefined,
+      );
     } catch (error) {
       if (!isDuplicateQuizSubmissionError(error)) {
         throw error;
       }
     }
 
-    await markQuizCompleted(
-      traineeId,
-      examId,
-      quizScore,
-      Number(internship?.id || assessmentId),
-    );
+    const scoreFromSubmit =
+      extractQuizScore(submitResponse) ??
+      Math.round((answeredCount / questionsList.length) * 100);
+
+    const completionResponse = submitResponse?.data ?? submitResponse ?? null;
 
     hasSubmittedRef.current = true;
     clearDraftState(assessmentId, traineeId);
@@ -209,7 +232,8 @@ const TraineeExamPage = () => {
 
     return {
       answeredCount,
-      quizScore,
+      quizScore: scoreFromSubmit,
+      quizCompletion: completionResponse?.data ?? completionResponse ?? null,
       payload,
     };
   };
@@ -244,6 +268,7 @@ const TraineeExamPage = () => {
           traineeId,
           examId,
           quizScore: finalQuizScore,
+          quizCompletion: persisted?.quizCompletion ?? null,
           answeredCount: finalAnsweredCount,
           totalQuestions: questions.length,
         },

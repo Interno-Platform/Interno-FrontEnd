@@ -12,9 +12,10 @@ export const createInternship = async (companyId, internshipData) => {
   return response.data;
 };
 
-// Get Internships - GET /api/company/internships
+// Get Internships - GET /api/company/internship
 export const getInternships = async (companyId) => {
-  const response = await api.get("/api/company/internships");
+  const params = companyId ? { company_id: companyId } : {};
+  const response = await api.get("/api/company/internships", { params });
 
   const payload = response.data?.data || response.data;
   const internships = Array.isArray(payload?.data)

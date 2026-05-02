@@ -132,9 +132,20 @@ const CodeExamPage = () => {
       return quizScore;
     }
 
-    const scoreFromApi = Number(quizSnapshot?.score);
+    const scoreFromApi = Number(
+      quizSnapshot?.score ??
+        quizSnapshot?.quizScore ??
+        quizSnapshot?.quiz_score ??
+        quizSnapshot?.examSubmission?.score,
+    );
     return Number.isFinite(scoreFromApi) ? scoreFromApi : 0;
-  }, [quizScore, quizSnapshot?.score]);
+  }, [
+    quizScore,
+    quizSnapshot?.score,
+    quizSnapshot?.quizScore,
+    quizSnapshot?.quiz_score,
+    quizSnapshot?.examSubmission?.score,
+  ]);
 
   const displayAnsweredCount = useMemo(() => {
     if (Number.isFinite(answeredCount) && answeredCount > 0) {
@@ -341,7 +352,10 @@ const CodeExamPage = () => {
         state: {
           stage: "final",
           internship,
+          traineeId,
           examId,
+          internshipId,
+          assessmentId,
           quizScore,
           answeredCount,
           totalQuestions,

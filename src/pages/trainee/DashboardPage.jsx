@@ -51,7 +51,7 @@ const TraineeDashboardPage = () => {
               <h4 className="mt-3 text-base font-semibold text-slate-900">{item.title}</h4>
               <p className="text-sm text-muted-foreground">{item.company}</p>
               <div className="mt-3 flex flex-wrap gap-2">
-                {item.skills.slice(0, 3).map((skill) => (
+                {item.skills?.slice(0, 3).map((skill) => (
                   <span key={skill} className="rounded-full border border-border bg-muted/40 px-2 py-1 text-xs text-slate-600">{skill}</span>
                 ))}
               </div>

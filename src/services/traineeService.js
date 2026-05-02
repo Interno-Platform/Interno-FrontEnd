@@ -19,7 +19,7 @@ export const insertTraineeSkills = async (traineeId, cvFile, skills) => {
 };
 
 // Submit Quiz Answers - POST /api/trainees/submit-quiz-answers
-export const submitQuizAnswers = async (traineeId, answers) => {
+export const submitQuizAnswers = async (traineeId, examId, answers, internshipId) => {
   const normalizedAnswers = Array.isArray(answers)
     ? answers
         .map((answer) => ({
@@ -35,10 +35,17 @@ export const submitQuizAnswers = async (traineeId, answers) => {
         )
     : [];
 
-  const response = await api.post("/api/trainees/submit-quiz-answers", {
+  const body = {
     traineeId,
+    examId,
     answers: normalizedAnswers,
-  });
+  };
+
+  if (internshipId) {
+    body.internshipId = internshipId;
+  }
+
+  const response = await api.post("/api/trainees/submit-quiz-answers", body);
   return response.data;
 };
 
@@ -54,22 +61,6 @@ export const submitExamSolution = async (
     examId,
     codeSolution,
     language,
-  });
-  return response.data;
-};
-
-// Mark Quiz Completed - POST /api/trainees/mark-quiz-completed
-export const markQuizCompleted = async (
-  traineeId,
-  examId,
-  quizScore,
-  internshipId,
-) => {
-  const response = await api.post("/api/trainees/mark-quiz-completed", {
-    traineeId,
-    examId,
-    quizScore,
-    internshipId,
   });
   return response.data;
 };

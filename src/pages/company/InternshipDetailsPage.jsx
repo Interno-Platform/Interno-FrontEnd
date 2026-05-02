@@ -189,7 +189,7 @@ const CompanyInternshipDetailsPage = () => {
     );
   }
 
-  const requiredSkillIds = Array.isArray(internship.required_skills)
+  const requiredSkillIds = Array.isArray(internship.required_skills ||internship.skills)
     ? internship.required_skills
         .map((value) => Number(value?.id ?? value?.skill_id ?? value))
         .filter((value) => Number.isFinite(value))

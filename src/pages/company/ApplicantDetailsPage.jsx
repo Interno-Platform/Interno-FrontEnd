@@ -321,22 +321,26 @@ const ApplicantDetailsPage = () => {
             >
               {statusLabels[applicant.status] || applicant.status}
             </span>
-            <Button
-              type="button"
-              className="bg-emerald-600 text-white hover:bg-emerald-700"
-              disabled={actionLoading}
-              onClick={() => handleReview("accepted")}
-            >
-              {applicant.status === "accepted" ? "Accepted" : "Accept"}
-            </Button>
-            <Button
-              type="button"
-              className="bg-rose-600 text-white hover:bg-rose-700"
-              disabled={actionLoading}
-              onClick={() => handleReview("rejected")}
-            >
-              {applicant.status === "rejected" ? "Rejected" : "Reject"}
-            </Button>
+            {applicant.status === "applied" ? (
+              <>
+                <Button
+                  type="button"
+                  className="bg-emerald-600 text-white hover:bg-emerald-700"
+                  disabled={actionLoading}
+                  onClick={() => handleReview("accepted")}
+                >
+                  {applicant.status === "accepted" ? "Accepted" : "Accept"}
+                </Button>
+                <Button
+                  type="button"
+                  className="bg-rose-600 text-white hover:bg-rose-700"
+                  disabled={actionLoading}
+                  onClick={() => handleReview("rejected")}
+                >
+                  {applicant.status === "rejected" ? "Rejected" : "Reject"}
+                </Button>
+              </>
+            ) : null}
           </div>
         </div>
 

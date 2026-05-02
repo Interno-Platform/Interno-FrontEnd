@@ -49,6 +49,19 @@ export const useAuthStore = create(
         clearAuthTokenCookie();
         set({ token: null, user: null });
       },
+      updateUser: (userData) =>
+        set((state) => ({
+          user: state.user
+            ? {
+                ...state.user,
+                ...userData,
+                details: {
+                  ...(state.user.details || {}),
+                  ...userData,
+                },
+              }
+            : state.user,
+        })),
     }),
     {
       name: "ims-auth",
