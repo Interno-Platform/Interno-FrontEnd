@@ -71,6 +71,19 @@ export const getAllTrainees = async () => {
   return normalizeListResponse(response.data);
 };
 
+// Change Trainee Status
+export const changeTraineeStatus = async (userId, status) => {
+  const normalizedStatus =
+    typeof status === "boolean"
+      ? status
+      : String(status).toLowerCase() === "active";
+
+  const response = await api.post(`/api/admin/account-status/${userId}`, {
+    status: normalizedStatus,
+  });
+  return response.data;
+};
+
 // Change Internship Status
 export const changeInternshipStatus = async (
   companyId,
@@ -115,9 +128,7 @@ export const getPendingInternships = async (companyId = null) => {
   }
 
   const internshipResults = await Promise.allSettled(
-    uniqueCompanyIds.map(() =>
-      api.get("/api/admin/pending-internships")
-    ),
+    uniqueCompanyIds.map(() => api.get("/api/admin/pending-internships")),
   );
 
   const allInternships = internshipResults.flatMap((result) => {
@@ -128,7 +139,7 @@ export const getPendingInternships = async (companyId = null) => {
 
   // 🔥 HARD DEDUP (important fix)
   const uniqueInternships = Array.from(
-    new Map(allInternships.map((i) => [i?.id, i])).values()
+    new Map(allInternships.map((i) => [i?.id, i])).values(),
   );
 
   return {
