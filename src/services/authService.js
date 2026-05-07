@@ -10,6 +10,15 @@ export const registerUser = async (userData) => {
 
   if (userData.role === "company") {
     formData.append("registration_number", userData.registration_number);
+
+    const socialMediaLinks = Array.isArray(userData.social_media_links)
+      ? userData.social_media_links
+          .map((item) => (typeof item === "string" ? item : item?.url))
+          .map((value) => String(value || "").trim())
+          .filter(Boolean)
+      : [];
+
+    formData.append("social_media_links", JSON.stringify(socialMediaLinks));
   }
 
   if (userData.role === "trainee" && userData.gender) {

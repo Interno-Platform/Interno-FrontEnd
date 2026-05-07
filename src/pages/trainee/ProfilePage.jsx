@@ -29,6 +29,15 @@ const ALLOWED_TYPES = [
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
 ];
 
+const IMAGE_MAX_SIZE = 5 * 1024 * 1024;
+const IMAGE_ALLOWED_TYPES = [
+  "image/png",
+  "image/jpeg",
+  "image/jpg",
+  "image/webp",
+  "image/gif",
+];
+
 const normalizeSkillsPayload = (payload) => {
   const skills = payload?.data?.skills || payload?.skills || [];
   return Array.isArray(skills)
@@ -70,8 +79,7 @@ const buildProfileForm = (user) => {
     gender: details?.gender || user?.gender || "",
     city: details?.city || user?.city || "",
     major: details?.major || user?.major || "",
-    graduation_year:
-      details?.graduation_year || user?.graduation_year || "",
+    graduation_year: details?.graduation_year || user?.graduation_year || "",
     // TODO: Re-enable bio field when backend/database support is added.
   };
 };
@@ -122,11 +130,22 @@ const TraineeProfilePage = () => {
   const [skillProgress, setSkillProgress] = useState([]);
   const [isProgressLoading, setIsProgressLoading] = useState(false);
   const [isSavedSkillsLoading, setIsSavedSkillsLoading] = useState(false);
+  const [profileImageFile, setProfileImageFile] = useState(null);
+  const [profileImagePreview, setProfileImagePreview] = useState(null);
   const { user, updateUser } = useAuthStore();
   const traineeId = Number(user?.id);
 
   useEffect(() => {
     setProfileForm(buildProfileForm(user));
+    // initialize profile image preview from available user fields
+    const existingImage =
+      user?.profileImage ||
+      user?.profile_image ||
+      user?.avatar ||
+      user?.image ||
+      user?.profile_picture ||
+      null;
+    setProfileImagePreview(existingImage || null);
   }, [user]);
 
   const {
@@ -197,10 +216,7 @@ const TraineeProfilePage = () => {
       setProfileProgress(
         computedProgress === 100
           ? Math.max(normalizedProgress, computedProgress)
-          : Math.min(
-              normalizedProgress || computedProgress,
-              computedProgress,
-            ),
+          : Math.min(normalizedProgress || computedProgress, computedProgress),
       );
       setSkillProgress(normalizeSkillsPayload(response));
     } catch (error) {
@@ -359,13 +375,38 @@ const TraineeProfilePage = () => {
 
     setIsSavingProfile(true);
     try {
-      await updateUserProfile(filteredData);
-      updateUser(filteredData);
-      updateProfileData(filteredData);
+      // Include image file if present
+      const payload = { ...filteredData };
+      if (profileImageFile) {
+        payload.profile_picture = profileImageFile;
+      }
+
+      const response = await updateUserProfile(payload);
+
+      // Prefer normalized user from server response when available
+      const updatedUser =
+        response?.data?.user || response?.user || response?.data || null;
+
+      if (updatedUser) {
+        updateUser(updatedUser);
+        updateProfileData(updatedUser);
+      } else {
+        // fallback to local merged fields
+        updateUser(filteredData);
+        updateProfileData(filteredData);
+      }
+
       setProfileForm((prev) => ({
         ...prev,
         ...filteredData,
       }));
+      if (
+        profileImageFile &&
+        profileImagePreview &&
+        profileImagePreview.startsWith("blob:")
+      ) {
+        // keep preview (object URL) until user navigates away
+      }
       await loadTraineeProgress();
       notify.success("Profile updated successfully.");
     } catch (error) {
@@ -373,6 +414,26 @@ const TraineeProfilePage = () => {
     } finally {
       setIsSavingProfile(false);
     }
+  };
+
+  const handleImageChange = (file) => {
+    if (!file) return;
+    if (!IMAGE_ALLOWED_TYPES.includes(file.type)) {
+      notify.error(
+        "Invalid image type. Use PNG, JPG, WEBP or GIF.",
+        "Invalid file type.",
+      );
+      return;
+    }
+    if (file.size > IMAGE_MAX_SIZE) {
+      notify.error("Image exceeds 5MB limit.", "File size is too large.");
+      return;
+    }
+
+    // create preview
+    const url = URL.createObjectURL(file);
+    setProfileImageFile(file);
+    setProfileImagePreview(url);
   };
 
   return (
@@ -385,6 +446,60 @@ const TraineeProfilePage = () => {
           <h1 className="mt-1 text-3xl font-extrabold tracking-tight text-slate-900">
             Trainee Profile
           </h1>
+        </div>
+        <div className="mt-3 flex items-center gap-4">
+          <div className="flex-shrink-0">
+            {profileImagePreview ? (
+              <img
+                src={profileImagePreview}
+                alt={user?.name || "User"}
+                className="h-20 w-20 rounded-xl object-cover"
+              />
+            ) : (
+              <div className="flex h-20 w-20 items-center justify-center rounded-xl bg-gradient-to-br from-[#3f7d45] to-[#2f6534] text-xl font-semibold text-white">
+                {(
+                  (profileForm.name || user?.name || "IN")
+                    .split(" ")
+                    .map((p) => p[0])
+                    .filter(Boolean)
+                    .slice(0, 2)
+                    .join("") || "IN"
+                ).toUpperCase()}
+              </div>
+            )}
+          </div>
+          <div>
+            <label className="inline-flex cursor-pointer items-center gap-2 text-sm font-medium">
+              <input
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => handleImageChange(e.target.files?.[0])}
+                type="file"
+              />
+              <UploadCloud className="h-5 w-5 text-slate-700" />
+              <span>Upload profile picture</span>
+            </label>
+            {profileImageFile ? (
+              <div>
+                <button
+                  type="button"
+                  className="mt-2 text-sm text-red-500"
+                  onClick={() => {
+                    setProfileImageFile(null);
+                    if (
+                      profileImagePreview &&
+                      profileImagePreview.startsWith("blob:")
+                    ) {
+                      URL.revokeObjectURL(profileImagePreview);
+                    }
+                    setProfileImagePreview(null);
+                  }}
+                >
+                  Remove
+                </button>
+              </div>
+            ) : null}
+          </div>
         </div>
         <div className="space-y-2 rounded-xl border border-slate-200 bg-slate-50 p-4">
           <div className="flex items-center justify-between text-sm">

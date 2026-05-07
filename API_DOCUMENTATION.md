@@ -29,6 +29,7 @@ POST /api/users/register
   - `password` (string, required) - كلمة المرور
   - `role` (enum, required) - دور المستخدم: `"trainee"` أو `"company"`
   - `registration_number` (string, required **للشركات فقط**) - رقم التسجيل
+  - `social_media_links` (array, required **للشركات فقط**) - روابط السوشيال ميديا
   - `profile_picture` (file, optional) - صورة الملف الشخصي
 
 **مثال البيانات:**
@@ -48,7 +49,11 @@ POST /api/users/register
   "email": "company@example.com",
   "password": "StrongPassword123!",
   "role": "company",
-  "registration_number": "REG123456"
+  "registration_number": "REG123456",
+  "social_media_links": [
+    "https://www.linkedin.com/company/example",
+    "https://x.com/example"
+  ]
 }
 ```
 

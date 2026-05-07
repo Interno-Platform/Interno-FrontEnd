@@ -1,6 +1,7 @@
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import {
@@ -17,6 +18,38 @@ import Button from "@/components/common/Button";
 import { notify } from "@/utils/notify";
 import { useAuth } from "@/hooks/useAuth";
 
+const isValidSocialMediaLink = (value) => {
+  const trimmed = String(value || "").trim();
+  if (!trimmed) return true;
+
+  try {
+    const parsed = new URL(trimmed);
+    if (!["http:", "https:"].includes(parsed.protocol)) {
+      return false;
+    }
+
+    const hostname = parsed.hostname.toLowerCase();
+    const allowedHosts = [
+      "linkedin.com",
+      "x.com",
+      "twitter.com",
+      "facebook.com",
+      "instagram.com",
+      "youtube.com",
+      "tiktok.com",
+      "github.com",
+      "behance.net",
+      "dribbble.com",
+    ];
+
+    return allowedHosts.some(
+      (host) => hostname === host || hostname.endsWith(`.${host}`),
+    );
+  } catch {
+    return false;
+  }
+};
+
 const schema = z
   .object({
     name: z.string().min(2, "Name must be at least 2 characters"),
@@ -26,6 +59,18 @@ const schema = z
     gender: z.string().optional(),
     registration_number: z.string().optional(),
     profile_picture: z.instanceof(File).optional(),
+    social_media_links: z
+      .array(
+        z.object({
+          url: z
+            .string()
+            .trim()
+            .refine(isValidSocialMediaLink, {
+              message: "Enter a valid social media link",
+            }),
+        }),
+      )
+      .default([{ url: "" }]),
   })
   .refine(
     (data) => {
@@ -39,6 +84,23 @@ const schema = z
       path: ["registration_number"],
     },
   )
+  .superRefine((data, ctx) => {
+    if (data.role !== "company") {
+      return;
+    }
+
+    const validLinks = (data.social_media_links || [])
+      .map((item) => item?.url?.trim())
+      .filter(Boolean);
+
+    if (validLinks.length === 0) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Add at least one valid social media link",
+        path: ["social_media_links", 0, "url"],
+      });
+    }
+  })
   .refine(
     (data) => {
       if (data.role === "trainee" && !data.gender) {
@@ -63,13 +125,32 @@ const RegisterPage = () => {
     handleSubmit,
     watch,
     setValue,
+    control,
     formState: { errors },
   } = useForm({
     resolver: zodResolver(schema),
-    defaultValues: { role: "trainee", gender: "" },
+    defaultValues: {
+      role: "trainee",
+      gender: "",
+      social_media_links: [{ url: "" }],
+    },
   });
   const selectedRole = watch("role");
   const profilePictureFile = watch("profile_picture");
+  const {
+    fields: socialMediaFields,
+    append: appendSocialMediaLink,
+    remove: removeSocialMediaLink,
+  } = useFieldArray({
+    control,
+    name: "social_media_links",
+  });
+
+  useEffect(() => {
+    if (selectedRole === "company" && socialMediaFields.length === 0) {
+      appendSocialMediaLink({ url: "" });
+    }
+  }, [appendSocialMediaLink, selectedRole, socialMediaFields.length]);
 
   const handleProfilePictureChange = (e) => {
     const file = e.target.files?.[0];
@@ -85,7 +166,17 @@ const RegisterPage = () => {
 
   const onSubmit = async (values) => {
     try {
-      await registerUser(values);
+      const payload = {
+        ...values,
+        social_media_links:
+          values.role === "company"
+            ? (values.social_media_links || [])
+                .map((item) => item?.url?.trim())
+                .filter(Boolean)
+            : [],
+      };
+
+      await registerUser(payload);
       notify.success("Registration completed. Please sign in.");
       navigate("/login");
     } catch (error) {
@@ -276,23 +367,83 @@ const RegisterPage = () => {
                 </label>
 
                 {selectedRole === "company" && (
-                  <label className="block space-y-1">
-                    <span className="text-sm font-semibold text-slate-700">
-                      Registration Number{" "}
-                      <span className="text-rose-600">*</span>
-                    </span>
-                    <input
-                      className="field-input"
-                      {...register("registration_number")}
-                      type="text"
-                      placeholder="e.g., REG123456"
-                    />
-                    {errors.registration_number ? (
-                      <span className="text-xs text-rose-600">
-                        {errors.registration_number.message}
+                  <div className="space-y-4 rounded-2xl border border-border/70 bg-muted/20 p-4">
+                    <label className="block space-y-1">
+                      <span className="text-sm font-semibold text-slate-700">
+                        Registration Number{" "}
+                        <span className="text-rose-600">*</span>
                       </span>
-                    ) : null}
-                  </label>
+                      <input
+                        className="field-input"
+                        {...register("registration_number")}
+                        type="text"
+                        placeholder="e.g., REG123456"
+                      />
+                      {errors.registration_number ? (
+                        <span className="text-xs text-rose-600">
+                          {errors.registration_number.message}
+                        </span>
+                      ) : null}
+                    </label>
+
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between gap-3">
+                        <div>
+                          <span className="text-sm font-semibold text-slate-700">
+                            Social Media Links{" "}
+                            <span className="text-rose-600">*</span>
+                          </span>
+                          <p className="text-xs text-muted-foreground">
+                            Add at least one valid company profile link.
+                          </p>
+                        </div>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          className="px-3"
+                          onClick={() => appendSocialMediaLink({ url: "" })}
+                        >
+                          Add link
+                        </Button>
+                      </div>
+
+                      <div className="space-y-3">
+                        {socialMediaFields.map((field, index) => (
+                          <div key={field.id} className="space-y-1">
+                            <div className="flex gap-2">
+                              <div className="flex-1 space-y-1">
+                                <input
+                                  className="field-input w-full"
+                                  {...register(
+                                    `social_media_links.${index}.url`,
+                                  )}
+                                  type="url"
+                                  placeholder="https://linkedin.com/company/your-brand"
+                                />
+                                {errors.social_media_links?.[index]?.url ? (
+                                  <span className="text-xs text-rose-600">
+                                    {
+                                      errors.social_media_links[index].url
+                                        .message
+                                    }
+                                  </span>
+                                ) : null}
+                              </div>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                className="px-3"
+                                disabled={socialMediaFields.length === 1}
+                                onClick={() => removeSocialMediaLink(index)}
+                              >
+                                Remove
+                              </Button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
                 )}
 
                 {selectedRole === "trainee" && (

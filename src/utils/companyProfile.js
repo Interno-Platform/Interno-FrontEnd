@@ -4,7 +4,16 @@ export const getCompanyDisplayName = (user) =>
 export const getCompanyLogoUrl = (user) =>
   user?.logo_url ||
   user?.details?.logo_url ||
+  // common variations used across the app
+  user?.profileImage ||
+  user?.profile_image ||
+  user?.avatar ||
+  user?.image ||
   user?.profile_picture ||
+  user?.details?.profileImage ||
+  user?.details?.profile_image ||
+  user?.details?.avatar ||
+  user?.details?.image ||
   user?.details?.profile_picture ||
   null;
 
