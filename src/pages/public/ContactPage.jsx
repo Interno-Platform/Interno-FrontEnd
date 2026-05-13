@@ -91,24 +91,13 @@ const ContactPage = () => {
           <InfoCard
             icon={<Mail className="h-4 w-4" />}
             label="Email"
-            value="support@interno.com"
+            value="contact@interno.blog"
           />
           <InfoCard
             icon={<Phone className="h-4 w-4" />}
             label="Phone"
-            value="+1 (555) 222-1020"
+            value="+2001507088804"
           />
-          <InfoCard
-            icon={<MapPin className="h-4 w-4" />}
-            label="Address"
-            value="221 Internship Blvd, New York"
-          />
-          <Card>
-            <h3 className="font-semibold text-slate-900">Business Hours</h3>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Mon - Fri: 9:00 AM - 6:00 PM
-            </p>
-          </Card>
         </div>
       </div>
     </div>

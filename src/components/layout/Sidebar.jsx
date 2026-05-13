@@ -85,14 +85,8 @@ const Sidebar = ({ links, role, onNavigate, onLogout, user }) => (
 const traineeLinks = [
   { to: "/trainee", label: "Home", icon: Home, end: true },
   { to: "/trainee/applications", label: "My Applications", icon: FileText },
-  { to: "/trainee/profile", label: "Profile", icon: UserRound },
   { to: "/trainee/internships", label: "Internships", icon: Bookmark },
-  {
-    to: "/trainee/notifications",
-    label: "Messages",
-    icon: MessageSquare,
-    badge: 2,
-  },
+  { to: "/trainee/profile", label: "Profile", icon: UserRound },
 ];
 
 const TraineeMenu = ({ onNavigate, user }) => (
@@ -127,8 +121,7 @@ const companyLinks = [
   { to: "/company", label: "Dashboard", icon: Home, end: true },
   { to: "/company/internships", label: "Internships", icon: Folder },
   { to: "/company/applicants", label: "Applicants", icon: Users },
-  { to: "/company/messages", label: "Messages", icon: MessageSquare, badge: 3 },
-  { to: "/company/interviews", label: "Interviews", icon: Calendar },
+  { to: "/company/settings", label: "Settings", icon: Settings },
 ];
 
 const CompanyMenu = ({ onNavigate, user }) => (
@@ -156,16 +149,6 @@ const CompanyMenu = ({ onNavigate, user }) => (
     </nav>
 
     <div className="mt-auto space-y-2">
-      <NavLink
-        className={({ isActive }) => `${navBase} ${navState(isActive)}`}
-        onClick={onNavigate}
-        to="/company/settings"
-      >
-        <span className="flex items-center gap-2.5">
-          <Settings className="h-4 w-4" />
-          Settings
-        </span>
-      </NavLink>
       <UserMeta role="company" roleLabel="Company Portal" user={user} />
     </div>
   </>

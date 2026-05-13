@@ -36,25 +36,6 @@ const AboutPage = () => (
         </Card>
       ))}
     </section>
-
-    <section className="grid gap-4 lg:grid-cols-[1.4fr_1fr]">
-      <Card className="space-y-3">
-        <h2 className="text-2xl font-semibold tracking-tight text-slate-900">Our Story</h2>
-        <div className="space-y-2 text-sm text-muted-foreground">
-          <p><strong>2022:</strong> Interno started as a simple portal for internship posting and tracking.</p>
-          <p><strong>2024:</strong> We expanded to role-based dashboards and enterprise workflows.</p>
-          <p><strong>2026:</strong> AI-enabled matching and assessment insights were introduced to improve hiring speed.</p>
-        </div>
-      </Card>
-      <Card className="space-y-3">
-        <h2 className="text-2xl font-semibold tracking-tight text-slate-900">Partners</h2>
-        <div className="grid gap-2">
-          {['BrightLabs', 'HealthNova', 'FinEdge', 'SkillPort'].map((name) => (
-            <div className="rounded-xl border border-border bg-muted/40 px-3 py-2 text-sm font-semibold text-slate-700" key={name}>{name}</div>
-          ))}
-        </div>
-      </Card>
-    </section>
   </div>
 );
 

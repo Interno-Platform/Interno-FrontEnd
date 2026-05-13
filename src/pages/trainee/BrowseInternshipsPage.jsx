@@ -171,9 +171,9 @@ const BrowseInternshipsPage = () => {
         </Card>
       ) : null}
 
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         {!isLoading && filtered.length === 0 ? (
-          <Card className="md:col-span-2 xl:col-span-3">
+          <Card className="sm:col-span-2 xl:col-span-3">
             <p className="text-sm text-slate-600">
               No internships found for the current filters.
             </p>
@@ -183,7 +183,7 @@ const BrowseInternshipsPage = () => {
         {filtered.map((internship) => (
           <Card
             key={internship.id}
-            className="group cursor-pointer space-y-3 border-slate-200 hover:-translate-y-1 hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#164616]/20"
+            className="group cursor-pointer space-y-3 border-slate-200 p-4 shadow-sm transition-all hover:-translate-y-1 hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#164616]/20 sm:p-5"
             onClick={() => openJourney(internship)}
             onKeyDown={(event) => handleCardKeyDown(event, internship)}
             role="button"
@@ -226,8 +226,8 @@ const BrowseInternshipsPage = () => {
                 </span>
               ))}
             </div>
-            <div className="max-h-0 overflow-hidden rounded-2xl border border-dashed border-slate-200 bg-slate-50/70 px-4 text-sm text-slate-600 opacity-0 transition-all duration-300 group-hover:max-h-48 group-hover:py-4 group-hover:opacity-100">
-              <div className="flex items-start gap-2 transition-transform duration-300 group-hover:translate-y-0">
+            <div className="max-h-48 overflow-hidden rounded-2xl border border-dashed border-slate-200 bg-slate-50/70 px-4 py-4 text-sm text-slate-600 opacity-100 transition-all duration-300 sm:max-h-0 sm:px-4 sm:py-0 sm:opacity-0 sm:group-hover:max-h-48 sm:group-hover:py-4 sm:group-hover:opacity-100">
+              <div className="flex items-start gap-2 transition-transform duration-300 sm:group-hover:translate-y-0">
                 <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
                 <div className="space-y-2">
                   <p className="font-semibold text-slate-900">Quick preview</p>
@@ -239,7 +239,7 @@ const BrowseInternshipsPage = () => {
                 </div>
               </div>
             </div>
-            <div className="flex gap-2 pt-1">
+            <div className="flex flex-col gap-2 pt-1 sm:flex-row">
               <Link
                 className="flex-1 rounded-lg border border-slate-200 px-3 py-2 text-center text-sm font-semibold text-slate-700 hover:bg-slate-50"
                 onClick={(event) => event.stopPropagation()}

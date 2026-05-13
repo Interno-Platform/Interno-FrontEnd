@@ -60,7 +60,6 @@ const linksByRole = {
       icon: BriefcaseBusiness,
     },
     { to: "/company/applicants", label: "Applicants", icon: FileText },
-    { to: "/company/messages", label: "Messages", icon: Bell },
     { to: "/company/interviews", label: "Interviews", icon: Users },
     { to: "/company/settings", label: "Profile Settings", icon: Settings },
   ],
