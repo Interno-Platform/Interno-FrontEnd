@@ -3,7 +3,6 @@ import { Link, Outlet, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import Sidebar from "./Sidebar";
 import Button from "@/components/common/Button";
-import ThemeToggle from "@/components/common/ThemeToggle";
 import { useAuthStore } from "@/store/authStore";
 import {
   getCompanyDisplayName,
@@ -204,7 +203,6 @@ const DashboardLayout = () => {
                     <House className="h-4 w-4" />
                     Home
                   </Link>
-                  <ThemeToggle />
                 </>
               ) : (
                 <p className="hidden text-sm text-muted-foreground sm:block">

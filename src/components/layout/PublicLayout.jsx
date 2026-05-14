@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import {
   Link,
   NavLink,
@@ -14,7 +14,10 @@ import {
   getCompanyLogoUrl,
   getUserInitials,
 } from "@/utils/companyProfile";
-import ThemeToggle from "@/components/common/ThemeToggle";
+
+const ThreeSiteBackground = lazy(
+  () => import("@/components/common/ThreeSiteBackground"),
+);
 
 const PublicLayout = () => {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -37,8 +40,11 @@ const PublicLayout = () => {
     .toUpperCase();
 
   useEffect(() => {
-    setMenuOpen(false);
-    setProfileOpen(false);
+    const timer = window.setTimeout(() => {
+      setMenuOpen(false);
+      setProfileOpen(false);
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, [location.pathname]);
 
   useEffect(() => {
@@ -58,8 +64,11 @@ const PublicLayout = () => {
   };
 
   return (
-    <div className="min-h-screen bg-grid-soft bg-slate-50/70">
-      <header className="fixed top-0 z-50 w-full border-b border-border/40 bg-card/85 backdrop-blur-md">
+    <div className="public-site-shell min-h-screen">
+      <Suspense fallback={null}>
+        <ThreeSiteBackground />
+      </Suspense>
+      <header className="fixed top-0 z-50 w-full border-b border-white/60 bg-white/82 shadow-[0_12px_36px_rgba(15,23,42,0.07)] backdrop-blur-xl dark:border-border/50 dark:bg-card/82">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
           <Link
             className="inline-flex items-center transition-all duration-200 hover:scale-[0.99] hover:opacity-80"
@@ -82,7 +91,6 @@ const PublicLayout = () => {
           </nav>
 
           <div className="hidden items-center gap-3 md:flex">
-            <ThemeToggle />
             {!isAuthed ? (
               <>
                 <NavLink
@@ -229,9 +237,6 @@ const PublicLayout = () => {
           className={`overflow-hidden border-t border-border/40 bg-card/95 transition-all duration-300 md:hidden ${menuOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"}`}
         >
           <nav className="mx-auto flex max-w-7xl flex-col py-1 text-sm font-medium text-foreground">
-            <div className="flex justify-end px-6 py-3 md:hidden">
-              <ThemeToggle />
-            </div>
             <MobileLink label="Home" setMenuOpen={setMenuOpen} to="/" />
             <MobileLink label="About" setMenuOpen={setMenuOpen} to="/about" />
             <MobileLink
@@ -261,11 +266,11 @@ const PublicLayout = () => {
         </div>
       </header>
 
-      <main className="mx-auto max-w-7xl px-4 pb-8 pt-28">
+      <main className="relative z-10 mx-auto max-w-7xl px-4 pb-8 pt-28">
         <Outlet />
       </main>
 
-      <footer className="mt-10 border-t border-border/70 bg-card">
+      <footer className="relative z-10 mt-10 border-t border-white/70 bg-white/78 backdrop-blur-xl dark:border-border/60 dark:bg-card/82">
         <div className="mx-auto grid max-w-7xl gap-8 px-4 pb-6 pt-12 md:grid-cols-4">
           <div>
             <img
@@ -351,7 +356,7 @@ const PublicLayout = () => {
           </div>
         </div>
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 border-t border-border/70 px-4 py-5 text-sm text-muted-foreground">
-          <p>� {new Date().getFullYear()} Interno. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} Interno. All rights reserved.</p>
           <p>Made with love for students</p>
         </div>
       </footer>

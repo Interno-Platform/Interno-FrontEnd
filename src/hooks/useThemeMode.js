@@ -9,14 +9,7 @@ export const getPreferredTheme = () =>
     : "light";
 
 export const getInitialTheme = () => {
-  if (typeof window === "undefined") return "light";
-
-  const storedTheme = window.localStorage.getItem(THEME_STORAGE_KEY);
-  if (storedTheme === "dark" || storedTheme === "light") {
-    return storedTheme;
-  }
-
-  return getPreferredTheme();
+  return "dark";
 };
 
 export const applyTheme = (theme) => {
@@ -44,29 +37,9 @@ const useThemeMode = () => {
     applyTheme(theme);
   }, [theme]);
 
-  useEffect(() => {
-    const onStorage = (event) => {
-      if (event.key === THEME_STORAGE_KEY && event.newValue) {
-        setTheme(event.newValue === "dark" ? "dark" : "light");
-      }
-    };
-
-    const onThemeChange = (event) => {
-      if (event.detail === "dark" || event.detail === "light") {
-        setTheme(event.detail);
-      }
-    };
-
-    window.addEventListener("storage", onStorage);
-    window.addEventListener("interno-theme-change", onThemeChange);
-    return () => {
-      window.removeEventListener("storage", onStorage);
-      window.removeEventListener("interno-theme-change", onThemeChange);
-    };
-  }, []);
-
-  const toggleTheme = () =>
-    setTheme((current) => (current === "dark" ? "light" : "dark"));
+  const toggleTheme = () => {
+    // Theme toggle is disabled
+  };
 
   return {
     theme,

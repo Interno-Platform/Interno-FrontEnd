@@ -3,7 +3,17 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Eye, EyeOff, Lock, Mail } from "lucide-react";
+import {
+  ArrowRight,
+  BadgeCheck,
+  Building2,
+  Eye,
+  EyeOff,
+  GraduationCap,
+  Lock,
+  Mail,
+  ShieldCheck,
+} from "lucide-react";
 import { roleLandingMap } from "@/utils/constants";
 import Button from "@/components/common/Button";
 import { useAuth } from "@/hooks/useAuth";
@@ -63,15 +73,13 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="overflow-hidden rounded-3xl border border-border/70 bg-white shadow-xl">
-      <div className="grid min-h-[76vh] lg:grid-cols-2">
-        <section className="auth-aurora relative hidden overflow-hidden p-10 text-white lg:flex lg:flex-col lg:justify-between">
-          <div className="pointer-events-none absolute inset-0 bg-noise-soft opacity-20" />
-          <div className="pointer-events-none absolute left-10 top-20 h-44 w-44 rounded-full border border-white/20 bg-white/10 blur-[1px] float-slower" />
-          <div className="pointer-events-none absolute bottom-16 right-12 h-56 w-56 rounded-full border border-white/20 bg-white/10 blur-[1px] float-slow" />
+    <div className="auth-page-shell overflow-hidden rounded-[1.6rem] border border-white/70 shadow-[0_28px_80px_rgba(15,23,42,0.13)] dark:border-border/70">
+      <div className="grid min-h-[76vh] lg:grid-cols-[1.02fr_0.98fr]">
+        <section className="auth-brand-panel relative hidden overflow-hidden p-10 text-white lg:flex lg:flex-col lg:justify-between">
+          <div className="absolute inset-0 bg-grid-soft opacity-15" />
 
           <div className="relative z-10">
-            <div className="inline-flex items-center gap-2 rounded-full border border-white/30 bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em]">
+            <div className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/12 px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] backdrop-blur">
               <img
                 src="/logo.png?v=2"
                 alt="Interno logo"
@@ -79,27 +87,57 @@ const LoginPage = () => {
               />
               Interno Platform
             </div>
-            <h1 className="mt-5 max-w-md text-4xl font-semibold tracking-tight">
-              Manage internship operations from one modern workspace.
+            <h1 className="mt-6 max-w-md text-4xl font-semibold leading-tight tracking-tight">
+              Welcome back to your internship command center.
             </h1>
-            <p className="mt-3 max-w-md text-sm text-emerald-50/95">
-              Applications, assessments, approvals, and hiring workflows in one
-              secure dashboard.
+            <p className="mt-4 max-w-md text-sm leading-6 text-emerald-50/95">
+              Continue managing applications, assessments, approvals, and hiring
+              workflows from one focused workspace.
             </p>
+          </div>
+
+          <div className="relative z-10 grid gap-3">
+            <AuthFeature
+              icon={<GraduationCap className="h-4 w-4" />}
+              title="Trainee progress"
+              copy="Track profile strength, exams, and applications."
+            />
+            <AuthFeature
+              icon={<Building2 className="h-4 w-4" />}
+              title="Company hiring"
+              copy="Review applicants and publish internships faster."
+            />
+            <AuthFeature
+              icon={<ShieldCheck className="h-4 w-4" />}
+              title="Secure approvals"
+              copy="Role-based access keeps every workflow controlled."
+            />
           </div>
         </section>
 
-        <section className="flex items-center justify-center p-6 md:p-10">
-          <div className="w-full max-w-md rounded-2xl border border-border/70 bg-white p-8 shadow-xl">
-            <div className="mb-6">
-              <span className="inline-flex h-12 w-12 items-center justify-center overflow-hidden rounded-xl bg-white shadow-sm">
+        <section className="flex items-center justify-center p-5 md:p-10">
+          <div className="w-full max-w-md rounded-[1.35rem] border border-white/80 bg-white/90 p-7 shadow-[0_20px_50px_rgba(15,23,42,0.12)] backdrop-blur-xl dark:border-border dark:bg-card/92 md:p-8">
+            <div className="mb-7">
+              <span className="inline-flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl border border-border/60 bg-white shadow-sm dark:bg-card">
+                <img
+                  src="/logo.png?v=2"
+                  alt="Interno logo"
+                  className="h-9 w-9 object-contain"
+                />
               </span>
-              <h2 className="mt-4 text-2xl font-bold tracking-tight text-slate-900">
-                Login
-              </h2>
-              <p className="text-sm text-muted-foreground">
-                Sign in to continue to your dashboard.
-              </p>
+              <div className="mt-5 flex items-start justify-between gap-4">
+                <div>
+                  <h2 className="text-3xl font-bold tracking-tight text-slate-950 dark:text-foreground">
+                    Sign in
+                  </h2>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    Use your account to continue to your dashboard.
+                  </p>
+                </div>
+                <span className="hidden rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary sm:inline-flex">
+                  Secure
+                </span>
+              </div>
             </div>
 
             <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
@@ -108,11 +146,12 @@ const LoginPage = () => {
                   Email
                 </span>
                 <div className="relative">
-                  <Mail className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <Mail className="pointer-events-none absolute left-3 top-3.5 h-4 w-4 text-muted-foreground" />
                   <input
-                    className="field-input pl-9"
+                    className="field-input h-11 pl-9"
                     {...register("email")}
                     type="email"
+                    placeholder="you@example.com"
                   />
                 </div>
                 {errors.email ? (
@@ -127,11 +166,12 @@ const LoginPage = () => {
                   Password
                 </span>
                 <div className="relative">
-                  <Lock className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <Lock className="pointer-events-none absolute left-3 top-3.5 h-4 w-4 text-muted-foreground" />
                   <input
-                    className="field-input pl-9 pr-10"
+                    className="field-input h-11 pl-9 pr-10"
                     {...register("password")}
                     type={showPassword ? "text" : "password"}
+                    placeholder="Enter your password"
                   />
                   <button
                     className="absolute right-3 top-2.5 rounded-md p-1 text-muted-foreground transition-all duration-200 hover:bg-muted"
@@ -155,12 +195,22 @@ const LoginPage = () => {
                 ) : null}
               </label>
 
-              <Button className="w-full" disabled={isLoading} type="submit">
+              <Button
+                className="mt-2 flex h-11 w-full items-center justify-center gap-2 shadow-[0_14px_28px_rgba(47,101,52,0.22)]"
+                disabled={isLoading}
+                type="submit"
+              >
                 {isLoading ? "Signing in..." : "Sign in"}
+                {!isLoading ? <ArrowRight className="h-4 w-4" /> : null}
               </Button>
             </form>
 
-            <p className="mt-4 text-sm text-muted-foreground">
+            <div className="mt-5 flex items-center gap-2 rounded-2xl border border-border/70 bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
+              <BadgeCheck className="h-4 w-4 text-primary" />
+              Role-based routing sends you to the right workspace.
+            </div>
+
+            <p className="mt-5 text-center text-sm text-muted-foreground">
               New here?{" "}
               <Link
                 className="font-semibold text-primary transition-all duration-200 hover:text-primary/80"
@@ -175,5 +225,17 @@ const LoginPage = () => {
     </div>
   );
 };
+
+const AuthFeature = ({ icon, title, copy }) => (
+  <div className="flex items-start gap-3 rounded-2xl border border-white/18 bg-white/10 p-4 backdrop-blur">
+    <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white/15 text-emerald-50">
+      {icon}
+    </span>
+    <div>
+      <p className="text-sm font-semibold">{title}</p>
+      <p className="mt-1 text-xs leading-5 text-emerald-50/85">{copy}</p>
+    </div>
+  </div>
+);
 
 export default LoginPage;

@@ -1,16 +1,18 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import {
+  ArrowRight,
   BriefcaseBusiness,
   Check,
   Eye,
   EyeOff,
   Lock,
   Mail,
+  ShieldCheck,
   UserRound,
   Upload,
 } from "lucide-react";
@@ -193,16 +195,14 @@ const RegisterPage = () => {
   };
 
   return (
-    <div className="overflow-hidden rounded-3xl border border-border/70 bg-white shadow-xl">
+    <div className="auth-page-shell overflow-hidden rounded-[1.6rem] border border-white/70 shadow-[0_28px_80px_rgba(15,23,42,0.13)] dark:border-border/70">
       <input type="hidden" {...register("role")} />
-      <div className="grid min-h-[76vh] lg:grid-cols-2">
-        <section className="auth-aurora relative hidden overflow-hidden p-10 text-white lg:flex lg:flex-col lg:justify-between">
-          <div className="pointer-events-none absolute inset-0 bg-noise-soft opacity-20" />
-          <div className="pointer-events-none absolute left-10 top-20 h-44 w-44 rounded-full border border-white/20 bg-white/10 blur-[1px] float-slower" />
-          <div className="pointer-events-none absolute bottom-16 right-12 h-56 w-56 rounded-full border border-white/20 bg-white/10 blur-[1px] float-slow" />
+      <div className="grid min-h-[76vh] lg:grid-cols-[0.92fr_1.08fr]">
+        <section className="auth-brand-panel relative hidden overflow-hidden p-10 text-white lg:flex lg:flex-col lg:justify-between">
+          <div className="absolute inset-0 bg-grid-soft opacity-15" />
 
           <div className="relative z-10">
-            <div className="inline-flex items-center gap-2 rounded-full border border-white/30 bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em]">
+            <div className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/12 px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] backdrop-blur">
               <img
                 src="/logo.png?v=2"
                 alt="Interno logo"
@@ -210,40 +210,68 @@ const RegisterPage = () => {
               />
               Create account
             </div>
-            <h1 className="mt-5 max-w-md text-4xl font-semibold tracking-tight">
+            <h1 className="mt-6 max-w-md text-4xl font-semibold leading-tight tracking-tight">
               Build your internship journey with Interno.
             </h1>
-            <p className="mt-3 max-w-md text-sm text-emerald-50/95">
+            <p className="mt-4 max-w-md text-sm leading-6 text-emerald-50/95">
               Pick your role, complete your profile, and start collaborating in
               minutes.
             </p>
           </div>
 
-          <div className="relative z-10 rounded-2xl border border-white/20 bg-white/10 p-4 text-sm">
-            <p className="font-semibold">Two-step onboarding</p>
-            <p className="mt-2 text-emerald-50/95">1. Select role</p>
-            <p className="text-emerald-50/95">2. Add account details</p>
+          <div className="relative z-10 space-y-3">
+            <div className="rounded-2xl border border-white/18 bg-white/10 p-4 backdrop-blur">
+              <div className="flex items-center gap-3">
+                <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-white/15">
+                  <ShieldCheck className="h-4 w-4" />
+                </span>
+                <div>
+                  <p className="text-sm font-semibold">Two-step onboarding</p>
+                  <p className="mt-1 text-xs leading-5 text-emerald-50/85">
+                    Select your role, then complete only the details your
+                    workspace needs.
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3 text-sm">
+              <div className="rounded-2xl border border-white/18 bg-white/10 p-4 backdrop-blur">
+                <p className="text-2xl font-bold">01</p>
+                <p className="mt-1 text-emerald-50/85">Choose role</p>
+              </div>
+              <div className="rounded-2xl border border-white/18 bg-white/10 p-4 backdrop-blur">
+                <p className="text-2xl font-bold">02</p>
+                <p className="mt-1 text-emerald-50/85">Create profile</p>
+              </div>
+            </div>
           </div>
         </section>
 
-        <section className="flex items-center justify-center p-6 md:p-10">
-          <div className="w-full max-w-md rounded-2xl border border-border/70 bg-white p-8 shadow-xl">
-            <div className="mb-6">
-              <span className="inline-flex h-12 w-12 items-center justify-center overflow-hidden rounded-xl bg-white shadow-sm">
+        <section className="flex items-center justify-center p-5 md:p-10">
+          <div className="w-full max-w-xl rounded-[1.35rem] border border-white/80 bg-white/90 p-7 shadow-[0_20px_50px_rgba(15,23,42,0.12)] backdrop-blur-xl dark:border-border dark:bg-card/92 md:p-8">
+            <div className="mb-7">
+              <span className="inline-flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl border border-border/60 bg-white shadow-sm dark:bg-card">
                 <img
                   src="/logo.png?v=2"
                   alt="Interno logo"
-                  className="h-full w-full object-contain"
+                  className="h-9 w-9 object-contain"
                 />
               </span>
-              <h2 className="mt-4 text-2xl font-bold tracking-tight text-slate-900">
-                Register
-              </h2>
-              <p className="text-sm text-muted-foreground">
-                {step === 1
-                  ? "Choose how you want to use Interno."
-                  : "Enter your account details to continue."}
-              </p>
+              <div className="mt-5 flex flex-wrap items-start justify-between gap-4">
+                <div>
+                  <h2 className="text-3xl font-bold tracking-tight text-slate-950 dark:text-foreground">
+                    Create account
+                  </h2>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    {step === 1
+                      ? "Choose how you want to use Interno."
+                      : "Enter your account details to continue."}
+                  </p>
+                </div>
+                <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
+                  Step {step}/2
+                </span>
+              </div>
             </div>
 
             <div className="mb-6 space-y-2">
@@ -251,9 +279,9 @@ const RegisterPage = () => {
                 <span>Step {step} of 2</span>
                 <span>{step === 1 ? "Role Selection" : "Account Details"}</span>
               </div>
-              <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
+              <div className="h-2 w-full overflow-hidden rounded-full bg-muted shadow-inner">
                 <div
-                  className="h-full rounded-full bg-primary transition-all duration-300"
+                  className="h-full rounded-full bg-gradient-to-r from-[#2f6534] to-[#5c9a64] transition-all duration-300"
                   style={{ width: step === 1 ? "50%" : "100%" }}
                 />
               </div>
@@ -286,11 +314,12 @@ const RegisterPage = () => {
                   }
                 />
                 <Button
-                  className="mt-2 w-full"
+                  className="mt-2 flex h-11 w-full items-center justify-center gap-2 shadow-[0_14px_28px_rgba(47,101,52,0.22)]"
                   onClick={handleContinue}
                   type="button"
                 >
                   Continue
+                  <ArrowRight className="h-4 w-4" />
                 </Button>
               </div>
             ) : (
@@ -302,9 +331,14 @@ const RegisterPage = () => {
                   <div className="relative">
                     <UserRound className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                     <input
-                      className="field-input pl-9"
+                      className="field-input h-11 pl-9"
                       {...register("name")}
                       type="text"
+                      placeholder={
+                        selectedRole === "company"
+                          ? "Company name"
+                          : "Full name"
+                      }
                     />
                   </div>
                   {errors.name ? (
@@ -321,9 +355,10 @@ const RegisterPage = () => {
                   <div className="relative">
                     <Mail className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                     <input
-                      className="field-input pl-9"
+                      className="field-input h-11 pl-9"
                       {...register("email")}
                       type="email"
+                      placeholder="you@example.com"
                     />
                   </div>
                   {errors.email ? (
@@ -340,9 +375,10 @@ const RegisterPage = () => {
                   <div className="relative">
                     <Lock className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                     <input
-                      className="field-input pl-9 pr-10"
+                      className="field-input h-11 pl-9 pr-10"
                       {...register("password")}
                       type={showPassword ? "text" : "password"}
+                      placeholder="At least 6 characters"
                     />
                     <button
                       className="absolute right-3 top-2.5 rounded-md p-1 text-muted-foreground transition-all duration-200 hover:bg-muted"
@@ -367,14 +403,14 @@ const RegisterPage = () => {
                 </label>
 
                 {selectedRole === "company" && (
-                  <div className="space-y-4 rounded-2xl border border-border/70 bg-muted/20 p-4">
+                  <div className="space-y-4 rounded-2xl border border-border/70 bg-muted/25 p-4">
                     <label className="block space-y-1">
                       <span className="text-sm font-semibold text-slate-700">
                         Registration Number{" "}
                         <span className="text-rose-600">*</span>
                       </span>
                       <input
-                        className="field-input"
+                        className="field-input h-11"
                         {...register("registration_number")}
                         type="text"
                         placeholder="e.g., REG123456"
@@ -413,7 +449,7 @@ const RegisterPage = () => {
                             <div className="flex gap-2">
                               <div className="flex-1 space-y-1">
                                 <input
-                                  className="field-input w-full"
+                                  className="field-input h-11 w-full"
                                   {...register(
                                     `social_media_links.${index}.url`,
                                   )}
@@ -451,7 +487,7 @@ const RegisterPage = () => {
                     <span className="text-sm font-semibold text-slate-700">
                       Gender <span className="text-rose-600">*</span>
                     </span>
-                    <select className="field-input" {...register("gender")}>
+                    <select className="field-input h-11" {...register("gender")}>
                       <option value="">Select gender</option>
                       <option value="male">Male</option>
                       <option value="female">Female</option>
@@ -512,25 +548,41 @@ const RegisterPage = () => {
                   ) : null}
                 </label>
 
-                <p className="text-sm text-muted-foreground">
+                <p className="rounded-2xl border border-border/70 bg-muted/30 px-3 py-2 text-sm text-muted-foreground">
                   Selected role:{" "}
                   <span className="font-semibold capitalize text-slate-900">
                     {selectedRole}
                   </span>
                 </p>
-                <Button className="w-full" disabled={isLoading} type="submit">
+                <Button
+                  className="flex h-11 w-full items-center justify-center gap-2 shadow-[0_14px_28px_rgba(47,101,52,0.22)]"
+                  disabled={isLoading}
+                  type="submit"
+                >
                   {isLoading ? "Creating account..." : "Create account"}
+                  {!isLoading ? <ArrowRight className="h-4 w-4" /> : null}
                 </Button>
               </form>
             )}
 
-            <button
-              className="mt-4 rounded-lg px-1 text-sm font-medium text-muted-foreground transition-all duration-200 hover:text-slate-800"
-              onClick={() => (step === 1 ? navigate(-1) : setStep(1))}
-              type="button"
-            >
-              Back
-            </button>
+            <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
+              <button
+                className="rounded-lg px-1 text-sm font-medium text-muted-foreground transition-all duration-200 hover:text-slate-800 dark:hover:text-foreground"
+                onClick={() => (step === 1 ? navigate(-1) : setStep(1))}
+                type="button"
+              >
+                Back
+              </button>
+              <p className="text-sm text-muted-foreground">
+                Already have an account?{" "}
+                <Link
+                  className="font-semibold text-primary transition-colors hover:text-primary/80"
+                  to="/login"
+                >
+                  Sign in
+                </Link>
+              </p>
+            </div>
           </div>
         </section>
       </div>
@@ -540,15 +592,15 @@ const RegisterPage = () => {
 
 const RoleCard = ({ title, description, selected, onSelect, icon }) => (
   <button
-    className={`relative flex w-full items-start gap-3 rounded-2xl border p-4 text-left transition-all duration-200 ${
+    className={`relative flex w-full items-start gap-3 rounded-2xl border p-4 text-left shadow-sm transition-all duration-200 ${
       selected
-        ? "border-primary bg-primary/[0.04] ring-1 ring-primary/40"
-        : "border-border hover:border-primary/50 hover:bg-muted/30"
+        ? "border-primary bg-primary/[0.06] ring-1 ring-primary/35"
+        : "border-border bg-white/70 hover:-translate-y-0.5 hover:border-primary/50 hover:bg-muted/30 dark:bg-card/60"
     }`}
     onClick={onSelect}
     type="button"
   >
-    <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/12 text-primary">
+    <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/12 text-primary">
       {icon}
     </span>
     <div>
