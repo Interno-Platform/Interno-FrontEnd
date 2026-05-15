@@ -654,7 +654,21 @@ const TraineeProfilePage = () => {
             </Button>
           </div>
         ) : null}
-
+        {user?.cv_file || user?.cv_url ? (
+          <div className="rounded-xl bg-emerald-50 p-3">
+            <p className="text-sm text-emerald-900">
+              CV uploaded:{" "}
+              <a
+                href={user?.cv_file}
+                className="font-medium text-emerald-700 underline"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                View CV
+              </a>
+            </p>
+          </div>
+        ) : null}
         {isSavedSkillsLoading ? (
           <div className="rounded-xl bg-emerald-50 p-3">
             <p className="text-sm text-emerald-900">Loading saved skills...</p>
@@ -718,6 +732,7 @@ const TraineeProfilePage = () => {
       />
     </div>
   );
+  
 };
 
 export default TraineeProfilePage;
