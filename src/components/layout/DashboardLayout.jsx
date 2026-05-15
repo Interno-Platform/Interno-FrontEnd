@@ -179,7 +179,7 @@ const DashboardLayout = () => {
                       type="text"
                     />
                   </label>
-                  
+
                   {isSuperAdmin ? (
                     <button
                       className="inline-flex items-center gap-2 rounded-xl border border-border bg-card px-3 py-2 text-xs font-semibold text-foreground transition-all duration-200 hover:bg-muted/60 sm:text-sm"

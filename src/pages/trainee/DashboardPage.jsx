@@ -21,7 +21,6 @@ const TraineeDashboardPage = () => {
               today.
             </p>
           </div>
-          
         </div>
       </Card>
 
