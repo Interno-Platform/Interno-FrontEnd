@@ -3,7 +3,16 @@ import { twMerge } from 'tailwind-merge';
 
 export const cn = (...inputs) => twMerge(clsx(inputs));
 
-export const formatDate = (date) => new Date(date).toLocaleDateString();
+export const formatDate = (date) => {
+  if (!date) return "N/A";
+  const parsed = new Date(date);
+  if (Number.isNaN(parsed.getTime())) return "N/A";
+  return parsed.toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+};
 
 export const paginate = (items, page = 1, pageSize = 10) => {
   const start = (page - 1) * pageSize;

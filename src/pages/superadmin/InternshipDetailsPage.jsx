@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import Card from "@/components/common/Card";
 import Badge from "@/components/common/Badge";
+import { formatDate } from "@/utils/helpers";
 import {
   changeInternshipStatus,
   getApprovedInternships,
@@ -9,12 +10,6 @@ import {
 } from "@/services/adminService";
 import { notify } from "@/utils/notify";
 
-const formatDate = (value) => {
-  if (!value) return "N/A";
-  const parsed = new Date(value);
-  if (Number.isNaN(parsed.getTime())) return "N/A";
-  return parsed.toLocaleDateString();
-};
 
 const toSkillLabel = (skill) => {
   if (typeof skill === "string") return skill;
