@@ -10,7 +10,6 @@ import {
 } from "@/services/adminService";
 import { notify } from "@/utils/notify";
 
-
 const toSkillLabel = (skill) => {
   if (typeof skill === "string") return skill;
   return (
