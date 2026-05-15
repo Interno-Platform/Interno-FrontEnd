@@ -70,7 +70,6 @@ const linksByRole = {
       icon: BriefcaseBusiness,
     },
     { to: "/trainee/applications", label: "My Applications", icon: FileText },
-    { to: "/trainee/notifications", label: "Notifications", icon: Bell },
     {
       to: "/trainee/assessments",
       label: "My Assessments",
@@ -180,13 +179,7 @@ const DashboardLayout = () => {
                       type="text"
                     />
                   </label>
-                  <button
-                    className="rounded-full border border-border bg-card p-2 text-muted-foreground transition-all duration-200 hover:bg-muted/60"
-                    type="button"
-                    aria-label="Notifications"
-                  >
-                    <Bell className="h-4 w-4" />
-                  </button>
+                  
                   {isSuperAdmin ? (
                     <button
                       className="inline-flex items-center gap-2 rounded-xl border border-border bg-card px-3 py-2 text-xs font-semibold text-foreground transition-all duration-200 hover:bg-muted/60 sm:text-sm"

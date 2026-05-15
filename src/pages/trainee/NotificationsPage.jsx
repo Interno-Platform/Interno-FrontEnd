@@ -1,4 +1,4 @@
-import { Bell, BriefcaseBusiness, Clock3 } from 'lucide-react';
+import { BriefcaseBusiness, Clock3 } from 'lucide-react';
 import Card from '@/components/common/Card';
 
 const notifications = [
@@ -26,9 +26,9 @@ const notifications = [
 ];
 
 const iconByType = {
-  update: <BriefcaseBusiness className="h-4 w-4" />,
-  match: <Bell className="h-4 w-4" />,
-  reminder: <Clock3 className="h-4 w-4" />,
+  update: null,
+  match: null,
+  reminder: null,
 };
 
 const NotificationsPage = () => (

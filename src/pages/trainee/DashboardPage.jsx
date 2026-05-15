@@ -1,5 +1,4 @@
-import { Bell, BriefcaseBusiness, CheckCircle2, Clock3 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { BriefcaseBusiness, CheckCircle2, Clock3 } from "lucide-react";
 import Card from "@/components/common/Card";
 import { useAuthStore } from "@/store/authStore";
 
@@ -22,12 +21,7 @@ const TraineeDashboardPage = () => {
               today.
             </p>
           </div>
-          <Link
-            className="inline-flex items-center gap-2 rounded-xl border border-border bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition-all duration-200 hover:bg-muted/60"
-            to="/trainee/notifications"
-          >
-            <Bell className="h-4 w-4" /> Notifications
-          </Link>
+          
         </div>
       </Card>
 
