@@ -221,15 +221,54 @@ const ExamInstructionsPage = () => {
         requiredSkills,
         internshipId,
       );
+      const quizStatusPayload =
+        questionsResponse?.data ?? questionsResponse ?? {};
+      const isQuizCompleted = Boolean(
+        quizStatusPayload?.quizCompleted ?? quizStatusPayload?.quiz_completed,
+      );
+      const quizScore = Number(
+        quizStatusPayload?.data?.quizScore ??
+          quizStatusPayload?.data?.quiz_score ??
+          quizStatusPayload?.quizScore ??
+          quizStatusPayload?.quiz_score ??
+          0,
+      );
+      const questionsExamId = Number(
+        quizStatusPayload?.data?.exam_id ??
+          quizStatusPayload?.exam_id ??
+          examId,
+      );
+      const answeredCount = Number(
+        quizStatusPayload?.data?.answeredQuestions ??
+          quizStatusPayload?.data?.answered_questions ??
+          0,
+      );
+      const totalQuestions = Number(
+        quizStatusPayload?.data?.totalQuestions ??
+          quizStatusPayload?.data?.total_questions ??
+          0,
+      );
+
+      if (isQuizCompleted) {
+        navigate(`/trainee/exam/${assessmentId}/result`, {
+          state: {
+            stage: "quiz",
+            internship,
+            traineeId,
+            examId: Number.isFinite(questionsExamId) ? questionsExamId : examId,
+            quizScore,
+            quizCompletion: quizStatusPayload?.data ?? quizStatusPayload,
+            answeredCount,
+            totalQuestions,
+          },
+        });
+        return;
+      }
+
       const questions = flattenQuestions(
         questionsResponse,
         requiredSkills,
         internship?.skills,
-      );
-      const questionsExamId = Number(
-        questionsResponse?.data?.exam_id ??
-          questionsResponse?.exam_id ??
-          examId,
       );
 
       if (!questions.length) {

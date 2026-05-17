@@ -165,20 +165,7 @@ const DashboardLayout = () => {
             <div className="flex flex-wrap items-center gap-2 lg:justify-end">
               {isTrainee || isCompany || isSuperAdmin ? (
                 <>
-                  <label className="relative hidden lg:block">
-                    <Search className="pointer-events-none absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <input
-                      className="w-72 rounded-xl border border-input bg-card py-2 pl-9 pr-3 text-sm outline-none transition-all duration-200 focus:border-primary/60 focus:ring-2 focus:ring-primary/20"
-                      placeholder={
-                        isSuperAdmin
-                          ? "Search users, logs..."
-                          : isCompany
-                            ? "Search candidates..."
-                            : "Search internships, companies"
-                      }
-                      type="text"
-                    />
-                  </label>
+        
 
                   {isSuperAdmin ? (
                     <button

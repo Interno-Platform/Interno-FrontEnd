@@ -19,7 +19,12 @@ export const insertTraineeSkills = async (traineeId, cvFile, skills) => {
 };
 
 // Submit Quiz Answers - POST /api/trainees/submit-quiz-answers
-export const submitQuizAnswers = async (traineeId, examId, answers, internshipId) => {
+export const submitQuizAnswers = async (
+  traineeId,
+  examId,
+  answers,
+  internshipId,
+) => {
   const normalizedAnswers = Array.isArray(answers)
     ? answers
         .map((answer) => ({
@@ -76,7 +81,7 @@ export const getQuizStatus = async (traineeId, examId) => {
   const response = await api.get(
     `/api/trainees/quiz-status/${traineeId}/${examId}`,
   );
-  return response.data;
+  return response.data?.data || response.data;
 };
 
 // Get Trainee Scores - GET /api/trainees/trainee-scores/:traineeId

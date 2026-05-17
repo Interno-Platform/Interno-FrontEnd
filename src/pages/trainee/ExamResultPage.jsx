@@ -12,12 +12,47 @@ import Card from "@/components/common/Card";
 import Button from "@/components/common/Button";
 import Badge from "@/components/common/Badge";
 import { getQuizStatus } from "@/services/traineeService";
-import { getInternshipDetails, applyForInternship } from "@/services/applicationService";
+import {
+  getInternshipDetails,
+  applyForInternship,
+} from "@/services/applicationService";
 import { notify } from "@/utils/notify";
 
 const toFiniteNumber = (value, fallback = 0) => {
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : fallback;
+};
+
+const extractPassingScore = (quizStatusData, quizState, internshipData) => {
+  const candidates = [
+    quizStatusData?.exam_passing_score,
+    quizStatusData?.examPassingScore,
+    quizStatusData?.passingScore,
+    quizStatusData?.data?.exam_passing_score,
+    quizStatusData?.data?.examPassingScore,
+    quizStatusData?.data?.passingScore,
+    quizState?.exam_passing_score,
+    quizState?.examPassingScore,
+    quizState?.passingScore,
+    quizState?.quizCompletion?.exam_passing_score,
+    quizState?.quizCompletion?.examPassingScore,
+    quizState?.quizCompletion?.passingScore,
+    internshipData?.exam_passing_score,
+    internshipData?.examPassingScore,
+    internshipData?.passingScore,
+    internshipData?.data?.exam_passing_score,
+    internshipData?.data?.examPassingScore,
+    internshipData?.data?.passingScore,
+  ];
+
+  for (const candidate of candidates) {
+    const numericValue = Number(candidate);
+    if (Number.isFinite(numericValue)) {
+      return numericValue;
+    }
+  }
+
+  return null;
 };
 
 const normalizeSkillScores = (value) => {
@@ -43,7 +78,9 @@ const normalizeSkillScores = (value) => {
     );
     const scorePercentage = toFiniteNumber(
       skill?.scorePercentage ?? skill?.score_percentage,
-      totalQuestions > 0 ? Math.round((correctAnswers / totalQuestions) * 100) : 0,
+      totalQuestions > 0
+        ? Math.round((correctAnswers / totalQuestions) * 100)
+        : 0,
     );
 
     return {
@@ -70,7 +107,8 @@ const ExamResultPage = () => {
   const traineeId = Number(state?.traineeId);
   const examId = Number(state?.examId || state?.assessmentId);
   const internshipId = Number(state?.internship?.id);
-  const hasSubmitQuizScore = state?.quizScore !== undefined && state?.quizScore !== null;
+  const hasSubmitQuizScore =
+    state?.quizScore !== undefined && state?.quizScore !== null;
   const submitQuizScore = toFiniteNumber(state?.quizScore);
   const quizScore = toFiniteNumber(
     state?.quizScore ??
@@ -87,8 +125,13 @@ const ExamResultPage = () => {
   const isQuizStage = state?.stage === "quiz";
   const isFinalStage = state?.stage === "final";
   const assessmentId = Number(state?.assessmentId || examId);
-  const passingScore = Number(internshipDetails?.passingScore ?? 60);
-  const hasPassed = quizScore >= passingScore;
+  const passingScore = extractPassingScore(
+    quizStatus,
+    state,
+    internshipDetails,
+  );
+  const hasPassingScore = Number.isFinite(passingScore);
+  const hasPassed = hasPassingScore && quizScore >= passingScore;
   const skillScores = useMemo(
     () => normalizeSkillScores(state?.quizCompletion ?? quizStatus),
     [quizStatus, state?.quizCompletion],
@@ -127,10 +170,13 @@ const ExamResultPage = () => {
       try {
         const [quizStatusResponse, internshipResponse] = await Promise.all([
           getQuizStatus(traineeId, examId),
-          internshipId ? getInternshipDetails(internshipId) : Promise.resolve(null),
+          internshipId
+            ? getInternshipDetails(internshipId)
+            : Promise.resolve(null),
         ]);
-        
-        const quizStatusData = quizStatusResponse?.data ?? quizStatusResponse ?? null;
+
+        const quizStatusData =
+          quizStatusResponse?.data ?? quizStatusResponse ?? null;
 
         if (isActive) {
           setQuizStatus(quizStatusData);
@@ -160,7 +206,13 @@ const ExamResultPage = () => {
 
   // Auto-apply after completing coding exam
   useEffect(() => {
-    if (!isFinalStage || !traineeId || !internshipId || hasApplied || isApplying) {
+    if (
+      !isFinalStage ||
+      !traineeId ||
+      !internshipId ||
+      hasApplied ||
+      isApplying
+    ) {
       return;
     }
 
@@ -172,10 +224,12 @@ const ExamResultPage = () => {
 
       try {
         await applyForInternship(traineeId, internshipId);
-        
+
         if (isActive) {
           setHasApplied(true);
-          notify.success("Application submitted successfully after completing all assessments.");
+          notify.success(
+            "Application submitted successfully after completing all assessments.",
+          );
         }
       } catch (error) {
         if (isActive) {
@@ -223,21 +277,6 @@ const ExamResultPage = () => {
                 {state.internship?.title || "Assessment flow"}
               </h1>
             </div>
-
-            <div className="flex flex-wrap gap-2">
-              <Badge>{statusLabel}</Badge>
-              <Badge className="bg-slate-800 text-slate-100">
-                Exam #{quizStatus?.exam_id ?? examId}
-              </Badge>
-              <Badge className="bg-slate-800 text-slate-100">
-                Trainee #{quizStatus?.trainee_id ?? traineeId}
-              </Badge>
-              {hasSubmitQuizScore ? (
-                <Badge className="bg-emerald-500/20 text-emerald-100">
-                  Submit score {submitQuizScore}%
-                </Badge>
-              ) : null}
-            </div>
           </div>
 
           <div className="rounded-3xl border border-white/10 bg-white/10 p-5 backdrop-blur-sm">
@@ -260,24 +299,15 @@ const ExamResultPage = () => {
             </div>
 
             <div className="mt-5 space-y-3 text-sm text-slate-200">
-              <div className="flex items-center justify-between gap-4">
-                <span className="inline-flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4" /> Status
-                </span>
-                <span className="font-semibold">{displayStatus}</span>
-              </div>
-              <div className="flex items-center justify-between gap-4">
-                <span className="inline-flex items-center gap-2">
-                  <Clock3 className="h-4 w-4" /> Submitted at
-                </span>
-                <span className="font-semibold">{submittedAt}</span>
-              </div>
+              <div className="flex items-center justify-between gap-4"></div>
               {isQuizStage && (
                 <div className="flex items-center justify-between gap-4">
                   <span className="inline-flex items-center gap-2">
-                    <Hash className="h-4 w-4" /> Required Score
+                    Required Score
                   </span>
-                  <span className="font-semibold">{passingScore}%</span>
+                  <span className="font-semibold">
+                    {hasPassingScore ? `${passingScore}%` : "Loading..."}
+                  </span>
                 </div>
               )}
             </div>
@@ -293,18 +323,6 @@ const ExamResultPage = () => {
           <p className="text-sm text-slate-500">
             Fetching the latest quiz status from the backend.
           </p>
-        </Card>
-      ) : null}
-
-      {loadError ? (
-        <Card className="border-amber-200 bg-amber-50 text-amber-900">
-          <div className="flex items-start gap-3">
-            <ServerCrash className="mt-0.5 h-5 w-5" />
-            <div className="space-y-1">
-              <p className="font-semibold">Could not load live status</p>
-              <p className="text-sm text-amber-800">{loadError}</p>
-            </div>
-          </div>
         </Card>
       ) : null}
 
@@ -331,9 +349,7 @@ const ExamResultPage = () => {
               >
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <p className="font-semibold text-slate-900">
-                      {skill.name}
-                    </p>
+                    <p className="font-semibold text-slate-900">{skill.name}</p>
                     <p className="mt-1 text-sm text-slate-500">
                       {skill.correctAnswers} correct of {skill.totalQuestions}
                     </p>
@@ -354,7 +370,6 @@ const ExamResultPage = () => {
                 </div>
                 <div className="mt-3 flex flex-wrap gap-2 text-xs text-slate-500">
                   <span>{skill.answeredQuestions} answered</span>
-                  <span>{skill.totalQuestions - skill.answeredQuestions} skipped</span>
                 </div>
               </div>
             ))}
@@ -374,15 +389,19 @@ const ExamResultPage = () => {
               {hasPassed ? "Quiz Completed" : "Quiz Not Passed"}
             </h3>
             <p className="text-sm text-slate-600">
-              {hasPassed
-                ? "Your quiz score has been saved. Continue now to complete the technical coding exam."
-                : `Your score of ${quizScore}% is below the required passing score of ${passingScore}%. Please try the quiz again to proceed to the technical exam.`}
+              {hasPassingScore
+                ? hasPassed
+                  ? "Your quiz score has been saved. Continue now to complete the technical coding exam."
+                  : `Your score of ${quizScore}% is below the required passing score of ${passingScore}%. Please try the quiz again to proceed to the technical exam.`
+                : "Loading required passing score from the quiz status..."}
             </p>
           </>
         ) : isFinalStage ? (
           <>
             <h3 className="font-semibold">
-              {hasApplied ? "Application Submitted" : "Finalizing Application..."}
+              {hasApplied
+                ? "Application Submitted"
+                : "Finalizing Application..."}
             </h3>
             <p className="text-sm text-slate-600">
               {hasApplied
@@ -435,18 +454,25 @@ const ExamResultPage = () => {
             </Link>
           </div>
         </Card>
-      ) : isQuizStage && !hasPassed ? (
+      ) : isQuizStage && hasPassingScore && !hasPassed ? (
         <Card className="space-y-3 border-red-200 bg-red-50/70">
           <h3 className="font-semibold text-red-900">Try Again</h3>
           <p className="text-sm text-red-800">
             You need to score at least {passingScore}% to proceed to the
-            technical exam. You can retake this quiz to improve your score.
+            technical exam.
           </p>
           <div className="flex flex-wrap gap-2">
             <Link to="/trainee/applications">
               <Button>Back to Applications</Button>
             </Link>
           </div>
+        </Card>
+      ) : isQuizStage && !hasPassingScore ? (
+        <Card className="space-y-3 border-slate-200 bg-slate-50/80">
+          <h3 className="font-semibold text-slate-900">Loading Result</h3>
+          <p className="text-sm text-slate-600">
+            Waiting for the required passing score from the quiz status.
+          </p>
         </Card>
       ) : null}
 
