@@ -3,9 +3,11 @@ import { Link, useLocation } from "react-router-dom";
 import {
   CheckCircle2,
   Clock3,
+  Frown,
   Hash,
   Medal,
   ServerCrash,
+  Smile,
   Target,
 } from "lucide-react";
 import Card from "@/components/common/Card";
@@ -276,6 +278,19 @@ const ExamResultPage = () => {
               <h1 className="text-3xl font-bold md:text-4xl">
                 {state.internship?.title || "Assessment flow"}
               </h1>
+            </div>
+            <div className="space-y-2">
+              {isQuizStage && hasPassed ? (
+                <div className="flex items-center gap-2">
+                  <Smile />
+                  <span>You passed the quiz</span>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <Frown />
+                  <span>You didn't pass the quiz</span>
+                </div>
+              )}
             </div>
           </div>
 
