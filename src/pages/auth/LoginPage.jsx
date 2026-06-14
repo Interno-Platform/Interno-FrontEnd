@@ -96,7 +96,7 @@ const LoginPage = () => {
             </p>
           </div>
 
-          <div className="relative z-10 grid gap-3">
+          <div className="relative mt-5 z-10 grid gap-3">
             <AuthFeature
               icon={<GraduationCap className="h-4 w-4" />}
               title="Trainee progress"
@@ -134,9 +134,6 @@ const LoginPage = () => {
                     Use your account to continue to your dashboard.
                   </p>
                 </div>
-                <span className="hidden rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary sm:inline-flex">
-                  Secure
-                </span>
               </div>
             </div>
 
@@ -204,12 +201,6 @@ const LoginPage = () => {
                 {!isLoading ? <ArrowRight className="h-4 w-4" /> : null}
               </Button>
             </form>
-
-            <div className="mt-5 flex items-center gap-2 rounded-2xl border border-border/70 bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
-              <BadgeCheck className="h-4 w-4 text-primary" />
-              Role-based routing sends you to the right workspace.
-            </div>
-
             <p className="mt-5 text-center text-sm text-muted-foreground">
               New here?{" "}
               <Link

@@ -357,7 +357,7 @@ const PublicLayout = () => {
         </div>
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 border-t border-border/70 px-4 py-5 text-sm text-muted-foreground">
           <p>© {new Date().getFullYear()} Interno. All rights reserved.</p>
-          <p>Made with love for students</p>
+          <p>Made with Interno Team</p>
         </div>
       </footer>
     </div>

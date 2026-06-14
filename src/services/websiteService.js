@@ -34,6 +34,6 @@ export const submitContactUsMessage = async (messageData) => {
 
 // Get Contact Us messages - GET /api/website/contact-us
 export const getContactUsMessages = async () => {
-  const response = await api.get("/api/website/contact-us");
+  const response = await api.get("/api/admin/contact-us");
   return normalizeContactMessagesResponse(response.data);
 };

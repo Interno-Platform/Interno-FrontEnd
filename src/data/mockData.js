@@ -26,57 +26,11 @@ export const users = [
 ];
 
 export const companies = [
-  {
-    id: "c1",
-    name: "BrightLabs",
-    industry: "Software",
-    status: "Active",
-    registeredDate: "2025-01-12",
-  },
-  {
-    id: "c2",
-    name: "HealthNova",
-    industry: "Healthcare",
-    status: "Inactive",
-    registeredDate: "2025-03-01",
-  },
-  {
-    id: "c3",
-    name: "FinEdge",
-    industry: "Finance",
-    status: "Active",
-    registeredDate: "2025-02-18",
-  },
+
 ];
 
 export const trainees = [
-  {
-    id: "t1",
-    name: "Ava Carter",
-    email: "trainee@interno.com",
-    status: "Active",
-    assignedCompany: "BrightLabs",
-    progress: 72,
-    skills: ["React.js", "JavaScript", "Git"],
-  },
-  {
-    id: "t2",
-    name: "Noah Bennett",
-    email: "noah@mail.com",
-    status: "Active",
-    assignedCompany: "FinEdge",
-    progress: 48,
-    skills: ["Python", "SQL"],
-  },
-  {
-    id: "t3",
-    name: "Mia Wong",
-    email: "mia@mail.com",
-    status: "Pending",
-    assignedCompany: "HealthNova",
-    progress: 20,
-    skills: ["Communication"],
-  },
+
 ];
 
 export const internships = [

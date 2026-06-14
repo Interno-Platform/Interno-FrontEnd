@@ -35,10 +35,7 @@ const steps = [
   },
 ];
 
-const totalApplicants = internships.reduce(
-  (sum, internship) => sum + (internship.applicants || 0),
-  0,
-);
+
 const activeCompanies = companies.filter(
   (company) => company.status === "Active",
 ).length;
@@ -260,7 +257,7 @@ const LandingPage = () => {
               <p className="text-sm text-emerald-100">Registered Students</p>
             </div>
             <div>
-              <p className="text-3xl font-bold">{totalApplicants}</p>
+              <p className="text-3xl font-bold">{0}</p>
               <p className="text-sm text-emerald-100">Applications Received</p>
             </div>
           </div>
