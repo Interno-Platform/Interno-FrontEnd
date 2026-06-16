@@ -17,6 +17,7 @@ import {
   getCompanyLogoUrl,
   getUserInitials,
 } from "@/utils/companyProfile";
+import { getPendingCompanies } from "@/services/adminService";
 
 const navBase =
   "group flex items-center justify-between rounded-xl px-3.5 py-2.5 text-sm font-semibold transition-all duration-200";
@@ -124,6 +125,8 @@ const companyLinks = [
   { to: "/company/settings", label: "Settings", icon: Settings },
 ];
 
+const pendingCompaines =  getPendingCompanies()
+
 const CompanyMenu = ({ onNavigate, user }) => (
   <>
     <nav className="space-y-1.5">
@@ -153,10 +156,11 @@ const CompanyMenu = ({ onNavigate, user }) => (
     </div>
   </>
 );
+// console.log("xx",pendingCompaines.length);
 
 const superAdminLinks = [
   { to: "/superadmin", label: "Dashboard", icon: Grid3X3, end: true },
-  { to: "/superadmin/requests", label: "Requests", icon: FileText, badge: 12 },
+  { to: "/superadmin/requests", label: "Requests", icon: FileText, badge: pendingCompaines.length > 0 ? pendingCompaines.length : 0 },
   {
     to: "/superadmin/contact-messages",
     label: "Contact Messages",

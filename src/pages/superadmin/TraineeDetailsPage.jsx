@@ -123,7 +123,7 @@ const TraineeDetailsPage = () => {
           Back
         </Button>
         <div className="flex items-center gap-2">
-          <Badge>{isActive ? "Active" : "Inactive"}</Badge>
+          <Badge className="bg-green-800">{isActive ? "Active" : "Inactive"}</Badge>
           <Button
             variant="danger"
             onClick={handleDeactivate}

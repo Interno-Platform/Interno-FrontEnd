@@ -40,6 +40,7 @@ const CompaniesPage = () => {
         city: item.city || "N/A",
         country: item.country || "N/A",
         industry: item.industry || "N/A",
+        socialMediaLinks: item.social_media_links || [],
         registrationNumber: item.registration_number || "N/A",
         profilePicture: item.profile_picture || item.logo_url || "",
         isActive: Number(item.is_active) === 1,
@@ -132,7 +133,6 @@ const CompaniesPage = () => {
           <option>Active</option>
           <option>Inactive</option>
         </select>
-        <Button onClick={() => setOpen(true)}>Add New Company</Button>
       </div>
 
       {isLoading ? (
@@ -309,6 +309,19 @@ const CompaniesPage = () => {
                 </p>
                 <p className="mt-1 text-sm text-slate-900 break-all">
                   {selectedCompany.website}
+                </p>
+              </div>
+
+                 <div className="rounded-xl border border-slate-200 bg-white px-3 py-2">
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  Social Media Links
+                </p>
+                <p className="mt-1 text-sm text-slate-900 break-all">
+                  {selectedCompany?.socialMediaLinks?.map((e)=>(
+                    <a className="text-blue-500 undreline-1 block" href={e} target="_blank" rel="noopener noreferrer">
+                      {e}
+                    </a>
+                  ))}
                 </p>
               </div>
               <div className="rounded-xl border border-slate-200 bg-white px-3 py-2">

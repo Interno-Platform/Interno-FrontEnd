@@ -210,7 +210,7 @@ const InternshipsPage = () => {
               {isLoading ? (
                 <tr>
                   <td
-                    className="px-5 py-6 text-center text-slate-500"
+                    className="px-5 py-6 text-center "
                     colSpan={7}
                   >
                     Loading internships...
@@ -219,7 +219,7 @@ const InternshipsPage = () => {
               ) : currentList.length === 0 ? (
                 <tr>
                   <td
-                    className="px-5 py-6 text-center text-slate-500"
+                    className="px-5 py-6 text-center "
                     colSpan={7}
                   >
                     {activeTab === "pending"
@@ -231,7 +231,7 @@ const InternshipsPage = () => {
                 currentList.map((internship) => (
                   <tr
                     key={getInternshipKey(internship)}
-                    className="border-t border-slate-100 hover:bg-slate-50/70"
+                    className="border-t border-slate-100 "
                   >
                     <td className="px-5 py-4">
                       <p className="font-semibold text-slate-900">

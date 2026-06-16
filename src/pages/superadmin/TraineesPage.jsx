@@ -125,7 +125,7 @@ const TraineesPage = () => {
             </td>
             <td className="px-4 py-3">{trainee.email || "N/A"}</td>
             <td className="px-4 py-3">
-              <Badge>
+              <Badge className="bg-green-800">
                 {Number(trainee.is_active ?? 1) === 1 ? "Active" : "Inactive"}
               </Badge>
             </td>

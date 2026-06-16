@@ -162,13 +162,10 @@ const ContactMessagesPage = () => {
                       message.id ||
                       `${message.email || "unknown"}-${message.created_at || index}`
                     }
-                    className="border-t border-slate-100 transition-colors hover:bg-slate-50/70"
+                    className="border-t border-slate-100 transition-colors "
                   >
                     <td className="px-5 py-4 text-slate-900">
                       <div className="flex items-center gap-3">
-                        <span className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-slate-100 text-xs font-bold text-slate-700">
-                          {getInitials(message.name)}
-                        </span>
                         <span className="font-semibold">
                           {message.name || "Unknown sender"}
                         </span>

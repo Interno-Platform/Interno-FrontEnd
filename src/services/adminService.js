@@ -48,7 +48,7 @@ export const getApprovedCompanies = async () => {
 
 // Get Pending Companies
 export const getPendingCompanies = async () => {
-  const response = await api.get("/api/admin/pending-companies");
+  const response = await api.get("/api/admin/pending-companies");  
   return normalizeListResponse(response.data);
 };
 
@@ -98,54 +98,17 @@ export const changeInternshipStatus = async (
 };
 
 // Get Pending Internships (FIXED DUPLICATES)
-export const getPendingInternships = async (companyId = null) => {
-  if (companyId) {
-    const response = await api.get("/api/admin/pending-internships");
+export const getPendingInternships = async () => {
+  console.log("fefegh");
+  
+  const response = await api.get("/api/admin/pending-internships");
 
-    return normalizeListResponse(response.data);
-  }
-
-  const companyListResults = await Promise.allSettled([
-    api.get("/api/admin/approved-companies"),
-    api.get("/api/admin/pending-companies"),
-  ]);
-
-  const companies = companyListResults.flatMap((result) => {
-    if (result.status !== "fulfilled") return [];
-    return normalizeListResponse(result.value.data).data;
-  });
-
-  const uniqueCompanyIds = [
-    ...new Set(companies.map((c) => String(c?.id)).filter(Boolean)),
-  ];
-
-  if (!uniqueCompanyIds.length) {
-    return {
-      data: [],
-      count: 0,
-      message: "No companies found for pending internship lookup.",
-    };
-  }
-
-  const internshipResults = await Promise.allSettled(
-    uniqueCompanyIds.map(() => api.get("/api/admin/pending-internships")),
-  );
-
-  const allInternships = internshipResults.flatMap((result) => {
-    if (result.status !== "fulfilled") return [];
-    const normalized = normalizeListResponse(result.value.data);
-    return normalized.data;
-  });
-
-  // 🔥 HARD DEDUP (important fix)
-  const uniqueInternships = Array.from(
-    new Map(allInternships.map((i) => [i?.id, i])).values(),
-  );
+  const normalized = normalizeListResponse(response.data);
 
   return {
-    data: uniqueInternships,
-    count: uniqueInternships.length,
-    message: "Pending internships retrieved.",
+    data: normalized.data || [],
+    count: normalized.count || 0,
+    message: normalized.message || "Pending internships retrieved.",
   };
 };
 // Get Approved Internships

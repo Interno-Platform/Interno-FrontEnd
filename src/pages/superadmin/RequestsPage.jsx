@@ -150,11 +150,7 @@ const RequestsPage = () => {
         </p>
       </Card>
 
-      {!isLoading && loadError ? (
-        <Card className="border-rose-200 bg-rose-50/70">
-          <p className="text-sm text-rose-700">{loadError}</p>
-        </Card>
-      ) : null}
+
 
       <Card className="overflow-x-auto p-0">
         <table className="w-full min-w-[760px] text-left text-sm">

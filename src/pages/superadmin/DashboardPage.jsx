@@ -23,45 +23,38 @@ const SuperAdminDashboardPage = () => {
   const [traineesCount, setTraineesCount] = useState(0);
   const [contactMessages, setContactMessages] = useState([]);
 
-  useEffect(() => {
-    const loadDashboard = async () => {
-      setIsLoading(true);
-      setLoadError("");
-      try {
-        const [traineesResponse, companiesResponse, internshipsResponse] =
-          await Promise.all([
-            getAllTrainees(),
-            getPendingCompanies(),
-            getPendingInternships(),
-          ]);
+useEffect(() => {
+  const loadDashboard = async () => {
+    setIsLoading(true);
 
-        const contactMessagesResponse = await getContactUsMessages().catch(
-          () => ({ data: [] }),
-        );
+    const traineesResponse = await getAllTrainees().catch(() => ({
+      data: [],
+    }));
 
-        const trainees = traineesResponse?.data || [];
-        const companies = companiesResponse?.data || [];
-        const internships = internshipsResponse?.data || [];
-        const messages = contactMessagesResponse?.data || [];
+    const companiesResponse = await getPendingCompanies().catch(() => ({
+      data: [],
+    }));
 
-        setTraineesCount(trainees.length);
-        setPendingCompanies(companies);
-        setPendingInternships(internships);
-        setContactMessages(messages);
-      } catch (error) {
-        setLoadError(error?.message || "Unable to load dashboard data.");
-        setTraineesCount(0);
-        setPendingCompanies([]);
-        setPendingInternships([]);
-        setContactMessages([]);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+    const internshipsResponse = await getPendingInternships().catch(() => ({
+      data: [],
+    }));
 
-    loadDashboard();
-  }, []);
+    const contactMessagesResponse = await getContactUsMessages().catch(
+      () => ({ data: [] }),
+    );
 
+    setTraineesCount(traineesResponse.data?.length || 0);
+    setPendingCompanies(companiesResponse.data || []);
+    setPendingInternships(internshipsResponse.data || []);
+    setContactMessages(contactMessagesResponse.data || []);
+
+    setIsLoading(false);
+  };
+
+  loadDashboard();
+}, []);
+  
+console.log(getPendingInternships);
   const metrics = [
     {
       label: "Total Trainees",
@@ -78,7 +71,7 @@ const SuperAdminDashboardPage = () => {
     {
       label: "Pending Companies",
       value: pendingCompanies.length,
-      chip: "Action Needed",
+      chip: " Needed",
       tone: "text-rose-700 bg-rose-100",
     },
   ];
@@ -108,13 +101,8 @@ const SuperAdminDashboardPage = () => {
 
   return (
     <div className="space-y-5">
-      {!isLoading && loadError ? (
-        <Card className="border-rose-200 bg-rose-50/70">
-          <p className="text-sm text-rose-700">{loadError}</p>
-        </Card>
-      ) : null}
 
-      <section className="rounded-2xl bg-gradient-to-r from-[#2f6534] to-[#3f7d45] px-6 py-6 text-white shadow-md">
+      {/* <section className="rounded-2xl bg-gradient-to-r from-[#2f6534] to-[#3f7d45] px-6 py-6 text-white shadow-md">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h2 className="text-4xl font-semibold tracking-tight">
@@ -132,7 +120,7 @@ const SuperAdminDashboardPage = () => {
             Review Requests
           </button>
         </div>
-      </section>
+      </section> */}
 
       <div className="grid gap-4 lg:grid-cols-3">
         {metrics.map((item) => (
@@ -141,11 +129,6 @@ const SuperAdminDashboardPage = () => {
               <p className="text-sm font-medium text-muted-foreground">
                 {item.label}
               </p>
-              <span
-                className={`rounded-full px-2 py-1 text-xs font-semibold ${item.tone}`}
-              >
-                {item.chip}
-              </span>
             </div>
             <p className="text-4xl font-semibold tracking-tight text-slate-900">
               {isLoading ? "..." : item.value}
@@ -157,7 +140,7 @@ const SuperAdminDashboardPage = () => {
         ))}
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-[2.2fr_1fr]">
+      {/* <div className="grid gap-4 lg:grid-cols-[2.2fr_1fr]">
         <Card className="space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-3xl font-semibold tracking-tight text-slate-900">
@@ -249,7 +232,7 @@ const SuperAdminDashboardPage = () => {
             </button>
           </Card>
         </div>
-      </div>
+      </div> */}
 
       <Card className="space-y-4">
         <div className="flex items-center justify-between">
