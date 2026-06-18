@@ -265,6 +265,7 @@ const ExamResultPage = () => {
   if (!state) {
     return <Card>No exam result found.</Card>;
   }
+console.log(state);
 
   return (
     <div className="mx-auto max-w-5xl space-y-5">
@@ -398,7 +399,7 @@ const ExamResultPage = () => {
       ) : null}
 
       <Card className="space-y-2">
-        {isQuizStage ? (
+        {isQuizStage && !state.hasPassed ? (
           <>
             <h3 className="font-semibold">
               {hasPassed ? "Quiz Completed" : "Quiz Not Passed"}
@@ -442,7 +443,7 @@ const ExamResultPage = () => {
         )}
       </Card>
 
-      {isQuizStage && hasPassed ? (
+      {isQuizStage && hasPassed && state.hasPassed ? (
         <Card className="space-y-3 border-emerald-200 bg-emerald-50/70">
           <h3 className="font-semibold text-emerald-900">Choose next step</h3>
           <p className="text-sm text-emerald-800">

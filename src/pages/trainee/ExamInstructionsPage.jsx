@@ -226,6 +226,9 @@ const ExamInstructionsPage = () => {
       const isQuizCompleted = Boolean(
         quizStatusPayload?.quizCompleted ?? quizStatusPayload?.quiz_completed,
       );
+       const isTechExamPassed = Boolean(
+        quizStatusPayload?.code_solution!=="" || quizStatusPayload?.code_solution!==null ? true : false,
+      );
       const quizScore = Number(
         quizStatusPayload?.data?.quizScore ??
           quizStatusPayload?.data?.quiz_score ??
@@ -249,6 +252,23 @@ const ExamInstructionsPage = () => {
           0,
       );
 
+      if (isTechExamPassed) {
+        navigate(`/trainee/exam/${assessmentId}/result`, {
+          state: {
+            stage: "code",
+            internship,
+            traineeId,
+            examId: Number.isFinite(questionsExamId) ? questionsExamId : examId,
+            quizScore,
+            quizCompletion: quizStatusPayload?.data ?? quizStatusPayload,
+            answeredCount,
+            hasPassed: true,
+            totalQuestions,
+          },
+        });
+        return;
+      }
+
       if (isQuizCompleted) {
         navigate(`/trainee/exam/${assessmentId}/result`, {
           state: {
@@ -259,6 +279,7 @@ const ExamInstructionsPage = () => {
             quizScore,
             quizCompletion: quizStatusPayload?.data ?? quizStatusPayload,
             answeredCount,
+            hasPassed: false,
             totalQuestions,
           },
         });
