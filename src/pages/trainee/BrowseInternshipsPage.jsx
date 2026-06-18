@@ -165,11 +165,7 @@ const BrowseInternshipsPage = () => {
         </Card>
       ) : null}
 
-      {!isLoading && loadError ? (
-        <Card className="border-rose-200 bg-rose-50/70">
-          <p className="text-sm text-rose-700">{loadError}</p>
-        </Card>
-      ) : null}
+
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         {!isLoading && filtered.length === 0 ? (

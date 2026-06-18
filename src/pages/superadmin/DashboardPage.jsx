@@ -133,9 +133,9 @@ console.log(getPendingInternships);
             <p className="text-4xl font-semibold tracking-tight text-slate-900">
               {isLoading ? "..." : item.value}
             </p>
-            <div className="h-1.5 rounded-full bg-muted">
+            {/* <div className="h-1.5 rounded-full bg-muted">
               <div className="h-full w-2/3 rounded-full bg-primary" />
-            </div>
+            </div> */}
           </Card>
         ))}
       </div>

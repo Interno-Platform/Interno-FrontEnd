@@ -256,7 +256,9 @@ const InternshipsPage = () => {
                       {formatDate(internship.deadline)}
                     </td>
                     <td className="px-5 py-4">
-                      <Badge>{toDisplayStatus(internship.status)}</Badge>
+                      <Badge className="bg-slate-100 text-slate-700">
+                        {toDisplayStatus(internship.status)}
+                      </Badge>
                     </td>
                     <td className="px-5 py-4">
                       <Link
