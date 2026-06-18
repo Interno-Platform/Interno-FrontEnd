@@ -280,8 +280,9 @@ console.log(state);
                 {state.internship?.title || "Assessment flow"}
               </h1>
             </div>
-            <div className="space-y-2">
-              {isQuizStage && hasPassed ? (
+          {state.stage === "quiz" ? (
+              <div className="space-y-2">
+              {isQuizStage && hasPassed &&state.stage === "quiz"? (
                 <div className="flex items-center gap-2">
                   <Smile />
                   <span>You passed the quiz</span>
@@ -293,6 +294,10 @@ console.log(state);
                 </div>
               )}
             </div>
+          ): (
+            <h1 >Your Application has been submitted</h1>
+          )}
+          
           </div>
 
           <div className="rounded-3xl border border-white/10 bg-white/10 p-5 backdrop-blur-sm">
