@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import Card from "@/components/common/Card";
 import Button from "@/components/common/Button";
 import { getQuestionsBySkills } from "@/services/applicationService";
-import { getTraineeSkills } from "@/services/traineeService";
+import { getQuizStatus, getTraineeSkills } from "@/services/traineeService";
 import { notify } from "@/utils/notify";
 import { useAuthStore } from "@/store/authStore";
 
@@ -16,6 +16,66 @@ const normalizeSkillName = (value) =>
   String(value || "")
     .trim()
     .toLowerCase();
+
+const findNestedValue = (value, keys) => {
+  if (!value || typeof value !== "object") {
+    return undefined;
+  }
+
+  if (Array.isArray(value)) {
+    for (const item of value) {
+      const nestedValue = findNestedValue(item, keys);
+      if (nestedValue !== undefined) {
+        return nestedValue;
+      }
+    }
+
+    return undefined;
+  }
+
+  for (const key of keys) {
+    if (Object.prototype.hasOwnProperty.call(value, key)) {
+      return value[key];
+    }
+  }
+
+  for (const nestedValue of Object.values(value)) {
+    const result = findNestedValue(nestedValue, keys);
+    if (result !== undefined) {
+      return result;
+    }
+  }
+
+  return undefined;
+};
+
+const hasSubmittedCodeSolution = (value) => {
+  const codeSolution = findNestedValue(value, [
+    "code_solution",
+    "codeSolution",
+  ]);
+
+  if (typeof codeSolution === "string") {
+    return codeSolution.trim() !== "";
+  }
+
+  return codeSolution !== null && codeSolution !== undefined;
+};
+
+const normalizeStatusPayload = (value) => {
+  const payload = value ?? {};
+  const nestedData =
+    payload?.data &&
+    !Array.isArray(payload.data) &&
+    typeof payload.data === "object"
+      ? payload.data
+      : {};
+
+  return {
+    ...payload,
+    ...nestedData,
+  };
+};
 
 const flattenQuestions = (
   responseData,
@@ -221,48 +281,60 @@ const ExamInstructionsPage = () => {
         requiredSkills,
         internshipId,
       );
-      const quizStatusPayload =
-        questionsResponse?.data ?? questionsResponse ?? {};
+
+      let quizStatusResponse = null;
+      try {
+        quizStatusResponse = await getQuizStatus(traineeId, examId);
+      } catch {
+        quizStatusResponse = null;
+      }
+
+      const questionsStatusData = normalizeStatusPayload(questionsResponse);
+      const quizStatusData = {
+        ...questionsStatusData,
+        ...normalizeStatusPayload(quizStatusResponse),
+      };
       const isQuizCompleted = Boolean(
-        quizStatusPayload?.quizCompleted ?? quizStatusPayload?.quiz_completed,
+        quizStatusData?.quizCompleted ?? quizStatusData?.quiz_completed,
       );
-       const isTechExamPassed = Boolean(
-        quizStatusPayload?.code_solution!=="" || quizStatusPayload?.code_solution!==null ? true : false,
-      );
+      const isTechExamPassed =
+        hasSubmittedCodeSolution(quizStatusResponse) ||
+        hasSubmittedCodeSolution(questionsResponse) ||
+        hasSubmittedCodeSolution(quizStatusData) ||
+        quizStatusData?.techCompleted === true ||
+        quizStatusData?.tech_completed === true ||
+        quizStatusData?.codeSubmitted === true ||
+        quizStatusData?.code_submitted === true;
       const quizScore = Number(
-        quizStatusPayload?.data?.quizScore ??
-          quizStatusPayload?.data?.quiz_score ??
-          quizStatusPayload?.quizScore ??
-          quizStatusPayload?.quiz_score ??
+        quizStatusData?.quizScore ??
+          quizStatusData?.quiz_score ??
           0,
       );
       const questionsExamId = Number(
-        quizStatusPayload?.data?.exam_id ??
-          quizStatusPayload?.exam_id ??
-          examId,
+        quizStatusData?.exam_id ?? quizStatusData?.examId ?? examId,
       );
       const answeredCount = Number(
-        quizStatusPayload?.data?.answeredQuestions ??
-          quizStatusPayload?.data?.answered_questions ??
+        quizStatusData?.answeredQuestions ??
+          quizStatusData?.answered_questions ??
           0,
       );
       const totalQuestions = Number(
-        quizStatusPayload?.data?.totalQuestions ??
-          quizStatusPayload?.data?.total_questions ??
-          0,
+        quizStatusData?.totalQuestions ?? quizStatusData?.total_questions ?? 0,
       );
 
       if (isTechExamPassed) {
         navigate(`/trainee/exam/${assessmentId}/result`, {
           state: {
-            stage: "code",
+            stage: "final",
+            assessmentId,
             internship,
             traineeId,
+            internshipId,
             examId: Number.isFinite(questionsExamId) ? questionsExamId : examId,
             quizScore,
-            quizCompletion: quizStatusPayload?.data ?? quizStatusPayload,
+            quizCompletion: quizStatusData,
             answeredCount,
-            hasPassed: true,
+            hasPassed: isTechExamPassed,
             totalQuestions,
           },
         });
@@ -277,9 +349,9 @@ const ExamInstructionsPage = () => {
             traineeId,
             examId: Number.isFinite(questionsExamId) ? questionsExamId : examId,
             quizScore,
-            quizCompletion: quizStatusPayload?.data ?? quizStatusPayload,
+            quizCompletion: quizStatusData,
             answeredCount,
-            hasPassed: false,
+            hasPassed: isTechExamPassed,
             totalQuestions,
           },
         });

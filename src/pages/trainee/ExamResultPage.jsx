@@ -96,6 +96,67 @@ const normalizeSkillScores = (value) => {
   });
 };
 
+const findNestedValue = (value, keys) => {
+  if (!value || typeof value !== "object") {
+    return undefined;
+  }
+
+  if (Array.isArray(value)) {
+    for (const item of value) {
+      const nestedValue = findNestedValue(item, keys);
+      if (nestedValue !== undefined) {
+        return nestedValue;
+      }
+    }
+
+    return undefined;
+  }
+
+  for (const key of keys) {
+    if (Object.prototype.hasOwnProperty.call(value, key)) {
+      return value[key];
+    }
+  }
+
+  for (const nestedValue of Object.values(value)) {
+    const result = findNestedValue(nestedValue, keys);
+    if (result !== undefined) {
+      return result;
+    }
+  }
+
+  return undefined;
+};
+
+const hasSubmittedCodeSolution = (value) => {
+  const payload = value ?? {};
+  const codeSolution = findNestedValue(payload, [
+    "code_solution",
+    "codeSolution",
+  ]);
+
+  if (typeof codeSolution === "string") {
+    return codeSolution.trim() !== "";
+  }
+
+  return codeSolution !== null && codeSolution !== undefined;
+};
+
+const normalizeStatusPayload = (value) => {
+  const payload = value ?? {};
+  const nestedData =
+    payload?.data &&
+    !Array.isArray(payload.data) &&
+    typeof payload.data === "object"
+      ? payload.data
+      : {};
+
+  return {
+    ...payload,
+    ...nestedData,
+  };
+};
+
 const ExamResultPage = () => {
   const { state } = useLocation();
   const [quizStatus, setQuizStatus] = useState(null);
@@ -108,7 +169,11 @@ const ExamResultPage = () => {
 
   const traineeId = Number(state?.traineeId);
   const examId = Number(state?.examId || state?.assessmentId);
-  const internshipId = Number(state?.internship?.id);
+  const internshipId = Number(
+    state?.internshipId ??
+      state?.internship?.id ??
+      state?.internship?.internship_id,
+  );
   const hasSubmitQuizScore =
     state?.quizScore !== undefined && state?.quizScore !== null;
   const submitQuizScore = toFiniteNumber(state?.quizScore);
@@ -124,8 +189,15 @@ const ExamResultPage = () => {
   );
   const answeredCount = Number(state?.answeredCount || 0);
   const totalQuestions = Number(state?.totalQuestions || 0);
-  const isQuizStage = state?.stage === "quiz";
-  const isFinalStage = state?.stage === "final";
+  const hasCodeSolution =
+    hasSubmittedCodeSolution(state) ||
+    hasSubmittedCodeSolution(state?.quizCompletion) ||
+    hasSubmittedCodeSolution(quizStatus);
+  const effectiveStage = hasCodeSolution ? "final" : state?.stage;
+  const isQuizStage = effectiveStage === "quiz";
+  const isFinalStage = effectiveStage === "final";
+  const isCheckingFinalStatus =
+    isQuizStage && !quizStatus && !loadError && Boolean(traineeId && examId);
   const assessmentId = Number(state?.assessmentId || examId);
   const passingScore = extractPassingScore(
     quizStatus,
@@ -177,8 +249,7 @@ const ExamResultPage = () => {
             : Promise.resolve(null),
         ]);
 
-        const quizStatusData =
-          quizStatusResponse?.data ?? quizStatusResponse ?? null;
+        const quizStatusData = normalizeStatusPayload(quizStatusResponse);
 
         if (isActive) {
           setQuizStatus(quizStatusData);
@@ -265,8 +336,6 @@ const ExamResultPage = () => {
   if (!state) {
     return <Card>No exam result found.</Card>;
   }
-console.log(state);
-
   return (
     <div className="mx-auto max-w-5xl space-y-5">
       <Card className="overflow-hidden mt-5 border-slate-200 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800 p-0 text-white shadow-xl">
@@ -280,9 +349,9 @@ console.log(state);
                 {state.internship?.title || "Assessment flow"}
               </h1>
             </div>
-          {state.stage === "quiz" ? (
+          {isQuizStage ? (
               <div className="space-y-2">
-              {isQuizStage && hasPassed &&state.stage === "quiz"? (
+              {hasPassed ? (
                 <div className="flex items-center gap-2">
                   <Smile />
                   <span>You passed the quiz</span>
@@ -448,7 +517,11 @@ console.log(state);
         )}
       </Card>
 
-      {isQuizStage && hasPassed && state.hasPassed ? (
+      {isQuizStage &&
+      hasPassed &&
+      !state.hasPassed &&
+      !isLoading &&
+      !isCheckingFinalStatus ? (
         <Card className="space-y-3 border-emerald-200 bg-emerald-50/70">
           <h3 className="font-semibold text-emerald-900">Choose next step</h3>
           <p className="text-sm text-emerald-800">
@@ -474,6 +547,16 @@ console.log(state);
               <Button variant="ghost">Continue later</Button>
             </Link>
           </div>
+        </Card>
+      ) : isQuizStage &&
+        hasPassed &&
+        !state.hasPassed &&
+        (isLoading || isCheckingFinalStatus) ? (
+        <Card className="space-y-3 border-slate-200 bg-slate-50/80">
+          <h3 className="font-semibold text-slate-900">Checking Status</h3>
+          <p className="text-sm text-slate-600">
+            Checking whether the technical exam was already submitted.
+          </p>
         </Card>
       ) : isQuizStage && hasPassingScore && !hasPassed ? (
         <Card className="space-y-3 border-red-200 bg-red-50/70">
