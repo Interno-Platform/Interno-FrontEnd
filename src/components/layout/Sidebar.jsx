@@ -114,7 +114,7 @@ const TraineeMenu = ({ onNavigate, user }) => (
       ))}
     </nav>
 
-    <UserMeta role="trainee" roleLabel="View Profile" user={user} />
+    <UserMeta role="trainee" roleLabel=" " user={user} />
   </>
 );
 
