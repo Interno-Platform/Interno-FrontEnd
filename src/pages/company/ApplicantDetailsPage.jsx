@@ -93,6 +93,15 @@ const getInitials = (name) =>
     .map((part) => part[0]?.toUpperCase() || "")
     .join("") || "AP";
 
+const getLastInternshipId = () => {
+  try {
+    const storedId = Number(sessionStorage.getItem("company:last-internship-id"));
+    return Number.isFinite(storedId) && storedId > 0 ? storedId : null;
+  } catch {
+    return null;
+  }
+};
+
 const isLikelyImageUrl = (value) => {
   if (!value) return false;
   const clean = String(value).split("?")[0].toLowerCase();
@@ -184,8 +193,10 @@ const ApplicantDetailsPage = () => {
   }, [applicant, applicationId, internshipId]);
 
   const backTarget = useMemo(
-    () => `/company/applicants/${internshipId || ""}`,
-    [internshipId],
+    () =>
+      location.state?.returnTo ||
+      `/company/applicants/${internshipId || getLastInternshipId() || ""}`,
+    [internshipId, location.state?.returnTo],
   );
 
   const formattedSubmittedCode = useMemo(
@@ -197,17 +208,16 @@ const ApplicantDetailsPage = () => {
   const handleReview = async (status) => {
     if (!applicant?.id) return;
 
-    const noteValue =
-      window.prompt("Add optional notes for this decision:", "") || "";
+
 
     setActionLoading(true);
     try {
-      await reviewApplication(applicationId || applicant.id, status, noteValue);
+      await reviewApplication(applicationId || applicant.id, status, applicant.notes || "");
 
       const updated = {
         ...applicant,
         status,
-        notes: noteValue || applicant.notes,
+        notes: applicant.notes ||"",
         reviewedAt: new Date().toISOString(),
       };
 

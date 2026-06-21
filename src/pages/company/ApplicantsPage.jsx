@@ -57,6 +57,15 @@ const getInitials = (name) =>
     .map((part) => part[0]?.toUpperCase() || "")
     .join("") || "AP";
 
+const getLastInternshipId = () => {
+  try {
+    const storedId = Number(sessionStorage.getItem("company:last-internship-id"));
+    return Number.isFinite(storedId) && storedId > 0 ? storedId : null;
+  } catch {
+    return null;
+  }
+};
+
 const ApplicantsPage = () => {
   const { internshipId } = useParams();
   const location = useLocation();
@@ -65,31 +74,41 @@ const ApplicantsPage = () => {
   const [applicants, setApplicants] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  
   const companyId =
     Number(user?.id || user?.company_id || user?.companyId) || null;
 
   const resolvedRequestId = useMemo(() => {
     const queryId = new URLSearchParams(location.search).get("internshipId");
     const stateId = location.state?.internshipId;
-    const id = Number(internshipId || queryId || stateId || companyId);
+    const storedId = getLastInternshipId();
+    const id = Number(internshipId || queryId || stateId || storedId);
     return Number.isFinite(id) && id > 0 ? id : null;
-  }, [companyId, internshipId, location.search, location.state?.internshipId]);
+  }, [internshipId, location.search, location.state?.internshipId]);
 
   const loadApplicants = async () => {
-    if (!resolvedRequestId) {
-      setError(
-        "Unable to resolve company or internship id for loading applicants.",
-      );
-      setApplicants([]);
-      return;
-    }
+
+    // if (!resolvedRequestId) {
+    //   setApplicants([]);
+    //   setError("");
+    //   return;
+    // }
 
     setIsLoading(true);
     setError("");
 
     try {
-      const response = await getInternshipApplications(resolvedRequestId);
+      const response = await getInternshipApplications(companyId);
       const list = Array.isArray(response?.data) ? response.data : [];
+
+      try {
+        sessionStorage.setItem(
+          "company:last-internship-id",
+          String(resolvedRequestId),
+        );
+      } catch {
+        // Ignore storage failures and continue with the fetched data.
+      }
 
       const normalized = list.map((item) => ({
         id: Number(item.application_id || item.id),
@@ -146,6 +165,15 @@ const ApplicantsPage = () => {
     const targetInternshipId = applicant?.internshipId || resolvedRequestId;
     if (!targetInternshipId || !applicant?.id) return;
 
+    try {
+      sessionStorage.setItem(
+        "company:last-internship-id",
+        String(targetInternshipId),
+      );
+    } catch {
+      // Ignore storage failures and continue with navigation.
+    }
+
     sessionStorage.setItem(
       "company:selected-applicant",
       JSON.stringify(applicant),
@@ -157,6 +185,7 @@ const ApplicantsPage = () => {
         state: {
           applicant,
           internshipId: targetInternshipId,
+          returnTo: `/company/applicants/${targetInternshipId}`,
         },
       },
     );
@@ -218,6 +247,14 @@ const ApplicantsPage = () => {
       {error ? (
         <Card className="border-rose-200 bg-rose-50/70">
           <p className="text-sm text-rose-700">{error}</p>
+        </Card>
+      ) : null}
+
+      {!isLoading && !resolvedRequestId && !error ? (
+        <Card>
+          <p className="text-sm text-slate-600">
+            Open an internship first to view its applicants.
+          </p>
         </Card>
       ) : null}
 
