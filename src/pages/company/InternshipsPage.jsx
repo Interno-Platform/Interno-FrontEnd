@@ -103,7 +103,7 @@ const internshipFormSchema = z.object({
     .refine((value) => value.length > 0, {
       message: "At least one requirement is required.",
     }),
-  expected_input: z.string().trim().min(1, "Expected input is required."),
+  expected_input: z.string().trim().optional(),
   expected_output: z.string().trim().min(1, "Expected output is required."),
   programmingLanguage: z
     .string()
@@ -693,9 +693,11 @@ const CompanyInternshipsPage = () => {
                 onChange={handleFormChange}
                 value={form.programmingLanguage}
               >
-                <option value="javascript">JavaScript</option>
-                <option value="python">Python</option>
-                <option value="cpp">C++</option>
+                {skills.map((skill) => (
+                  <option key={skill.id} value={skill.name}>
+                    {skill.name}
+                  </option>
+                ))}
               </Select>
 
               <label className="md:col-span-2 block space-y-1">
@@ -726,21 +728,7 @@ const CompanyInternshipsPage = () => {
                 />
               </label>
 
-              <label className="block space-y-1 md:col-span-1">
-                <span className="text-sm font-semibold text-slate-700 dark:text-foreground">
-                  Expected input
-                </span>
-                <textarea
-                  className="field-input min-h-24"
-                  name="expected_input"
-                  onChange={handleFormChange}
-                  required
-                  rows="3"
-                  value={form.expected_input}
-                />
-              </label>
-
-              <label className="block space-y-1 md:col-span-1">
+              <label className="block space-y-1 md:col-span-2">
                 <span className="text-sm font-semibold text-slate-700 dark:text-foreground">
                   Expected output
                 </span>
@@ -768,25 +756,19 @@ const CompanyInternshipsPage = () => {
                 />
               </label>
 
-              <Input
-                label="Exam time limit (minutes)"
-                min="1"
-                name="exam_time_limit_minutes"
-                onChange={handleFormChange}
-                type="number"
-                value={form.exam_time_limit_minutes}
-              />
-
-              <Input
-                label="Passing score (%)"
-                max="100"
-                min="0"
-                name="exam_passing_score"
-                onChange={handleFormChange}
-                required
-                type="number"
-                value={form.exam_passing_score}
-              />
+              <label className="md:col-span-2 block space-y-1">
+                <span className="text-sm font-semibold text-slate-700 dark:text-foreground">
+                  Passing Score For Quiz (0-100) %
+                </span>
+                <textarea
+                  className="field-input !h-10 "
+                  name="exam_passing_score"
+                  onChange={handleFormChange}
+                  required
+                  rows="4"
+                  value={form.exam_passing_score}
+                />
+              </label>
 
               <label className="md:col-span-2 block space-y-1">
                 <span className="text-sm font-semibold text-slate-700 dark:text-foreground">

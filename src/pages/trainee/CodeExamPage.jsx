@@ -260,14 +260,6 @@ const CodeExamPage = () => {
     );
   }
 
-  const handleLanguageChange = (nextLanguage) => {
-    setLanguage(nextLanguage);
-    if (!code.trim() || Object.values(STARTER_CODE).includes(code)) {
-      setCode(STARTER_CODE[nextLanguage]);
-    }
-    setValidationFeedback(INITIAL_VALIDATION_FEEDBACK);
-  };
-
   const normalizeOutput = (value) =>
     String(value || "")
       .replace(/\r\n/g, "\n")
@@ -588,15 +580,9 @@ const CodeExamPage = () => {
                 <label className="mb-1 block text-xs font-semibold uppercase tracking-[0.12em] text-slate-400">
                   Language
                 </label>
-                <select
-                  className="field-input border-slate-600 bg-slate-800 text-slate-100"
-                  onChange={(event) => handleLanguageChange(event.target.value)}
-                  value={language}
-                >
-                  <option value="javascript">JavaScript</option>
-                  <option value="python">Python</option>
-                  <option value="cpp">C++</option>
-                </select>
+                <div className="field-input flex items-center border-slate-600 bg-slate-800 text-slate-100">
+                  <span className="text-sm font-medium">{displayLanguage}</span>
+                </div>
               </div>
             </div>
 

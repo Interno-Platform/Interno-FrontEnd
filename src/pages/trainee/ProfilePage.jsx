@@ -11,6 +11,7 @@ import {
   insertExtractedSkillsForTrainee,
 } from "@/services/cvService";
 import {
+  getSkillScore,
   getTraineeProgress,
   getTraineeSkills,
 } from "@/services/traineeService";
@@ -38,19 +39,6 @@ const IMAGE_ALLOWED_TYPES = [
   "image/gif",
 ];
 
-const normalizeSkillsPayload = (payload) => {
-  const skills = payload?.data?.skills || payload?.skills || [];
-  return Array.isArray(skills)
-    ? skills.map((item, index) => ({
-        id: Number(item?.skill_id ?? item?.id) || index + 1,
-        name: item?.skill_name || item?.name || `Skill ${index + 1}`,
-        progress:
-          Number(item?.progress ?? item?.score ?? item?.skill_progress ?? 0) ||
-          0,
-      }))
-    : [];
-};
-
 const normalizeSkillNames = (payload) => {
   const rawSkills =
     payload?.data?.skills ?? payload?.skills ?? payload?.data ?? payload ?? [];
@@ -66,6 +54,57 @@ const normalizeSkillNames = (payload) => {
         : String(item?.name ?? item?.skill_name ?? "").trim(),
     )
     .filter(Boolean);
+};
+
+const normalizeSavedSkillItems = (payload) => {
+  const rawSkills =
+    payload?.data?.skills ?? payload?.skills ?? payload?.data ?? payload ?? [];
+
+  if (!Array.isArray(rawSkills)) {
+    return [];
+  }
+
+  return rawSkills
+    .map((item, index) => {
+      if (typeof item === "string") {
+        return {
+          id: null,
+          name: item.trim(),
+        };
+      }
+
+      const id = Number(item?.skill_id ?? item?.id);
+      const name = String(
+        item?.skill_name ?? item?.name ?? `Skill ${index + 1}`,
+      ).trim();
+
+      return {
+        id: Number.isFinite(id) ? id : null,
+        name,
+      };
+    })
+    .filter((skill) => skill.name);
+};
+
+const normalizeSkillScore = (payload, fallbackSkill) => {
+  const score = payload?.data ?? payload ?? {};
+  const progress = toProgressNumber(
+    score?.score_percentage ??
+      score?.scorePercentage ??
+      score?.progress ??
+      score?.score ??
+      0,
+  );
+
+  return {
+    id: Number(score?.skill_id ?? score?.skillId ?? fallbackSkill.id) || null,
+    name:
+      score?.skill_name ??
+      score?.skillName ??
+      score?.name ??
+      fallbackSkill.name,
+    progress,
+  };
 };
 
 const buildProfileForm = (user) => {
@@ -186,10 +225,13 @@ const TraineeProfilePage = () => {
       }),
     [hasAnySkills, hasProfileInfo, hasUploadedCv],
   );
+  const displayedProfileCompletion = Math.min(
+    Math.max(profileCompletion, profileProgress, 0),
+    100,
+  );
 
   const loadTraineeProgress = useCallback(async () => {
     if (!traineeId) return;
-    setIsProgressLoading(true);
     try {
       const response = await getTraineeProgress(traineeId);
       const rawProgress =
@@ -218,7 +260,6 @@ const TraineeProfilePage = () => {
           ? Math.max(normalizedProgress, computedProgress)
           : Math.min(normalizedProgress || computedProgress, computedProgress),
       );
-      setSkillProgress(normalizeSkillsPayload(response));
     } catch (error) {
       const hasCvLocal = Boolean(cvFile) || Boolean(hasCvUploaded);
       const hasSkillsLocal = hasAnySkills;
@@ -231,10 +272,43 @@ const TraineeProfilePage = () => {
         }),
       );
       notify.error(error?.message, "Failed to load profile progress.");
-    } finally {
-      setIsProgressLoading(false);
     }
   }, [traineeId, cvFile, hasCvUploaded, hasAnySkills, hasProfileInfo]);
+
+  const loadSkillScores = useCallback(
+    async (skills) => {
+      if (!traineeId) return;
+
+      const skillsWithIds = skills.filter((skill) => skill.id);
+
+      if (!skillsWithIds.length) {
+        setSkillProgress([]);
+        return;
+      }
+
+      setIsProgressLoading(true);
+      try {
+        const results = await Promise.allSettled(
+          skillsWithIds.map((skill) => getSkillScore(traineeId, skill.id)),
+        );
+
+        setSkillProgress(
+          results.map((result, index) =>
+            result.status === "fulfilled"
+              ? normalizeSkillScore(result.value, skillsWithIds[index])
+              : {
+                  id: skillsWithIds[index].id,
+                  name: skillsWithIds[index].name,
+                  progress: 0,
+                },
+          ),
+        );
+      } finally {
+        setIsProgressLoading(false);
+      }
+    },
+    [traineeId],
+  );
 
   const loadTraineeSkills = useCallback(async () => {
     if (!traineeId) return;
@@ -242,13 +316,16 @@ const TraineeProfilePage = () => {
     try {
       const response = await getTraineeSkills(traineeId);
       const normalized = normalizeSkillNames(response);
+      const normalizedItems = normalizeSavedSkillItems(response);
       setSavedSkills(normalized);
+      await loadSkillScores(normalizedItems);
     } catch (error) {
       setSavedSkills([]);
+      setSkillProgress([]);
     } finally {
       setIsSavedSkillsLoading(false);
     }
-  }, [setSavedSkills, traineeId]);
+  }, [loadSkillScores, setSavedSkills, traineeId]);
 
   useEffect(() => {
     if (!traineeId) return;
@@ -507,19 +584,19 @@ const TraineeProfilePage = () => {
               Profile completion
             </span>
             <span className="font-bold text-slate-900">
-              {profileCompletion}%
+              {displayedProfileCompletion}%
             </span>
           </div>
           <div className="h-2 rounded-full bg-slate-200">
             <div
               className="h-full rounded-full bg-[#164616]"
-              style={{ width: `${profileCompletion}%` }}
+              style={{ width: `${displayedProfileCompletion}%` }}
             />
           </div>
           <p className="text-xs text-slate-500">
-            {profileCompletion === 100
+            {displayedProfileCompletion === 100
               ? "Your profile is ready for applying."
-              : `Complete your profile data, upload your CV, and save your skills (${profileCompletion}% complete).`}
+              : `Complete your profile data, upload your CV, and save your skills (${displayedProfileCompletion}% complete).`}
           </p>
         </div>
         <div className="grid gap-4 md:grid-cols-2">
