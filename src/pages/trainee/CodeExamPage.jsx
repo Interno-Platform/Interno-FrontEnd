@@ -535,14 +535,14 @@ const CodeExamPage = () => {
 
               {activeTab === "io" ? (
                 <div className="space-y-3">
-                  <div className="rounded-xl border border-slate-700 bg-slate-900 p-3">
+                  {/* <div className="rounded-xl border border-slate-700 bg-slate-900 p-3">
                     <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-400">
                       Expected Input
                     </p>
                     <pre className="mt-2 whitespace-pre-wrap font-mono text-xs leading-6 text-slate-200">
                       {techExam?.expected_input || "Not specified."}
                     </pre>
-                  </div>
+                  </div> */}
 
                   <div className="rounded-xl border border-slate-700 bg-slate-900 p-3">
                     <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-400">
@@ -555,7 +555,7 @@ const CodeExamPage = () => {
                 </div>
               ) : null}
 
-              <div className="rounded-lg border border-slate-800 bg-slate-900/70 p-2.5 text-xs text-slate-400">
+              {/* <div className="rounded-lg border border-slate-800 bg-slate-900/70 p-2.5 text-xs text-slate-400">
                 <div className="flex flex-wrap items-center gap-2">
                   <CalendarClock className="h-3.5 w-3.5" />
                   <span>
@@ -564,7 +564,7 @@ const CodeExamPage = () => {
                       : "Creation date not available"}
                   </span>
                 </div>
-              </div>
+              </div> */}
             </div>
           </section>
 
