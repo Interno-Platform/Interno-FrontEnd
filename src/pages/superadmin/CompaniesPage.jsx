@@ -176,7 +176,7 @@ const CompaniesPage = () => {
             </td>
             <td className="px-4 py-3">{company.industry}</td>
             <td className="px-4 py-3">
-              <Badge>{company.status || "Pending"}</Badge>
+              <Badge className="bg-green-700 text-white">{company.status || "Pending"}</Badge>
             </td>
             <td className="px-4 py-3">
               {company.registeredDate
@@ -202,7 +202,6 @@ const CompaniesPage = () => {
                       ? "Activate"
                       : "Deactivate"}
                 </Button>
-                <Button variant="danger">Delete</Button>
               </div>
             </td>
           </tr>
@@ -312,13 +311,18 @@ const CompaniesPage = () => {
                 </p>
               </div>
 
-                 <div className="rounded-xl border border-slate-200 bg-white px-3 py-2">
+              <div className="rounded-xl border border-slate-200 bg-white px-3 py-2">
                 <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
                   Social Media Links
                 </p>
                 <p className="mt-1 text-sm text-slate-900 break-all">
-                  {selectedCompany?.socialMediaLinks?.map((e)=>(
-                    <a className="text-blue-500 undreline-1 block" href={e} target="_blank" rel="noopener noreferrer">
+                  {selectedCompany?.socialMediaLinks?.map((e) => (
+                    <a
+                      className="text-blue-500 undreline-1 block"
+                      href={e}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
                       {e}
                     </a>
                   ))}

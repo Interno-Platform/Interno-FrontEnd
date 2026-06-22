@@ -20,6 +20,7 @@ const COMPANY_DETAIL_FIELDS = [
   { label: "City", keys: ["city"] },
   { label: "Country", keys: ["country"] },
   { label: "Employee Count", keys: ["employee_count", "company_size", "size"] },
+    {label:"Social Media Links", keys:["social_media_links"]},
   { label: "Annual Revenue", keys: ["annual_revenue"] },
   { label: "Founded Date", keys: ["founded_date"] },
   { label: "Account Status", keys: ["is_active"] },
@@ -301,12 +302,32 @@ const RequestsPage = () => {
                     key={label}
                     className="rounded-xl border border-slate-200/80 bg-white px-3.5 py-3 shadow-[0_1px_2px_rgba(15,23,42,0.06)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_8px_18px_rgba(15,23,42,0.08)]"
                   >
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-500">
-                      {label}
-                    </p>
-                    <p className="mt-1.5 break-words text-sm font-medium text-slate-900">
-                      {value}
-                    </p>
+                 {label === "Social Media Links" && Array.isArray(rawValue) ? (
+                    <div>
+                      <p className="text-xs font-semibold text-slate-500">{label}</p>
+                      <ul className="mt-1 space-y-1">
+                        {rawValue.map((link, index) => (
+                          <li key={index}>
+                            <a
+                              href={link}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-sm font-medium text-cyan-600 hover:underline"
+                            >
+                              {link}
+                            </a>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ) : (
+                    <>
+                      <p className="text-xs font-semibold text-slate-500">{label}</p>
+                      <p className="mt-1 text-sm font-medium text-slate-700">
+                        {value}
+                      </p>
+                    </>
+                  )}
                   </div>
                 );
               })}

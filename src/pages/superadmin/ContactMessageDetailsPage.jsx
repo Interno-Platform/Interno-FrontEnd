@@ -110,7 +110,7 @@ const ContactMessageDetailsPage = () => {
 
       {!isLoading && message ? (
         <Card className="space-y-5">
-          <div className="rounded-2xl border border-slate-200 bg-gradient-to-r from-slate-50 to-white p-4">
+          <div className="rounded-2xl border border-slate-200 bg- p-4">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div className="flex items-center gap-3">
                 <div className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-cyan-100 text-base font-black text-cyan-700">

@@ -179,7 +179,7 @@ const RegisterPage = () => {
       };
 
       await registerUser(payload);
-      notify.success("Registration completed. Please sign in.");
+      notify.success("Registration completed. Please sign in. , Check Your Mail to verify your account.");
       navigate("/login");
     } catch (error) {
       notify.error(error?.message, "Registration could not be completed.");
@@ -502,7 +502,7 @@ const RegisterPage = () => {
 
                 <label className="block space-y-1">
                   <span className="text-sm font-semibold text-slate-700">
-                    Profile Picture{" "}
+                    Logo {" "}
                     <span className="text-xs text-muted-foreground">
                       (Optional)
                     </span>
