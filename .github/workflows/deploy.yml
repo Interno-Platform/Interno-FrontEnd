@@ -1,4 +1,4 @@
-name: Deploy FrontEnd to Server
+name: Build
 
 on:
   push:
@@ -6,11 +6,11 @@ on:
       - main
 
 jobs:
-  build-and-deploy:
+  build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Clone repo
+      - name: Checkout
         uses: actions/checkout@v4
 
       - name: Setup Node.js
@@ -22,7 +22,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: .env
+      - name: Create .env
         run: |
           echo "VITE_API_BASE_URL=${{ secrets.VITE_API_BASE_URL }}" >> .env
           echo "VITE_USE_MOCK_AI=${{ secrets.VITE_USE_MOCK_AI }}" >> .env
@@ -31,17 +31,5 @@ jobs:
           echo "VITE_GROQ_API_KEY=${{ secrets.VITE_GROQ_API_KEY }}" >> .env
           echo "VITE_GROQ_MODEL=${{ secrets.VITE_GROQ_MODEL }}" >> .env
 
-      - name: Build project
+      - name: Build
         run: npm run build
-
-      - name: Check build output
-        run: ls -la dist
-
-      - name: Deploy To Server (FTP)
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
-        with:
-          server: ${{ secrets.FTP_HOST }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          local-dir: ./dist/
-          server-dir: /home/edulandacademy/web/interno.blog/public_html/
